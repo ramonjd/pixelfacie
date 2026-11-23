@@ -44,13 +44,22 @@
 	box-sizing: border-box;
 }
 
+/* A full-height column, so the footer sits at the bottom of the window on
+   short pages: main grows to fill the space above it. */
 body {
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
 	margin: 0;
 	background: var(--bg);
 	color: var(--text);
 	font-family: var(--body-font);
 	font-size: 18px;
 	line-height: 1.6;
+}
+
+body > main {
+	flex: 1;
 }
 
 h1,
