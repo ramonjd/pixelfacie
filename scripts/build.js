@@ -1,24 +1,26 @@
 // Builds the site into dist/.
 //
-// Pages are plain HTML templates in src/templates. Blog posts are Markdown
-// files in content/posts, each starting with a short front matter block:
+// Pages are plain HTML templates in src/templates. Notes are Markdown files
+// in content/posts, each starting with a short front matter block:
 //
 //   ---
 //   title: Hello, world
 //   date: 2026-11-06
 //   ---
 //
-// Add `draft: true` to keep a post out of the build.
+// Each note is published at /notes/<file-name>/. Add `draft: true` to keep a
+// note out of the build, and `summary: one line` to show a summary on the
+// home page card.
 //
-// To give a post a featured image, put the file in content/posts/images and
+// To give a note a featured image, put the file in content/posts/images and
 // add `image: file-name.jpg` and `imageAlt: what the image shows`.
 //
-// To tag a post, add `tags: Essays, WordPress`. Each tag gets a page at
-// /blog/tags/essays/ listing its posts.
+// To tag a note, add `tags: EU AI Act, Policy`. Each tag gets a page at
+// /topics/eu-ai-act/ listing its notes, and /topics/ lists every tag.
 //
-// Videos for posts go in content/posts/videos and are served from
-// /blog/videos/, so a post can show one with
-// <video src="/blog/videos/file-name.mp4" controls></video>.
+// Videos for notes go in content/posts/videos and are served from
+// /notes/videos/, so a note can show one with
+// <video src="/notes/videos/file-name.mp4" controls></video>.
 
 import { existsSync } from 'node:fs';
 import { cp, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';

@@ -1,7 +1,7 @@
 {
   "name": "ramonopoly",
   "private": true,
-  "description": "Ramon's personal site: a one-page portfolio and a simple blog.",
+  "description": "Pixel Facie: Ramon's learning notes on AI law.",
   "type": "module",
   "engines": {
     "node": ">=20.11"
