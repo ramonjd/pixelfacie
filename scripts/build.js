@@ -33,7 +33,7 @@ const ASSETS_DIR = path.join(ROOT, 'src', 'assets');
 const POSTS_DIR = path.join(ROOT, 'content', 'posts');
 const OUTPUT_DIR = path.join(ROOT, 'dist');
 
-const SITE_NAME = 'Ramon';
+const SITE_NAME = 'Pixel Facie';
 const POSTS_ON_HOME_PAGE = 3;
 
 await build();
