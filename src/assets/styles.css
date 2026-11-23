@@ -190,10 +190,9 @@ a:hover {
 	display: none;
 }
 
-/* The footer runs the full width of the window. The scenery from
+/* The footer runs the full width of the window. The cyber grid from
    footer-scene.js sits along its bottom edge and repeats sideways, 8px per
-   art pixel, so 144px tall. The bottom padding keeps the text
-   above it. */
+   art pixel, so 144px tall. The bottom padding keeps the text above it. */
 .site-footer {
 	margin-top: 96px;
 	padding-top: 32px;
@@ -653,6 +652,15 @@ a:hover {
 	.button-front,
 	.button::after {
 		transition: none;
+	}
+
+	/* The footer's still pictures, without the flickering lights. */
+	.site-footer {
+		background-image: url("/assets/footer-night-still.svg");
+	}
+
+	[data-theme="light"] .site-footer {
+		background-image: url("/assets/footer-day-still.svg");
 	}
 
 	/* Keep to the first frame. */
