@@ -129,11 +129,18 @@ a:hover {
 }
 
 .logo {
+	display: flex;
+	align-items: center;
+	gap: 12px;
 	color: var(--text);
 	font-family: var(--pixel-font);
 	font-size: 28px;
 	font-weight: 700;
 	text-decoration: none;
+}
+
+.logo-robot {
+	flex: none;
 }
 
 .cursor {
@@ -201,6 +208,83 @@ a:hover {
 
 /* Home page
    ====================================================================== */
+
+.tagline {
+	font-size: clamp(32px, 5vw, 56px);
+}
+
+/* The newest note, with the robot reading beside it. */
+.exhibit {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 24px 40px;
+	margin-top: 40px;
+	padding: 32px;
+	background: var(--surface);
+}
+
+.exhibit-robot {
+	flex: none;
+}
+
+.exhibit-text {
+	display: flex;
+	flex: 1 1 280px;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.exhibit h2 {
+	font-size: clamp(28px, 4vw, 40px);
+}
+
+.exhibit h2 a {
+	color: var(--text);
+	text-decoration: none;
+}
+
+.exhibit h2 a:hover {
+	color: var(--accent);
+}
+
+/* One frame at a time, 450ms each, swapping instantly like a game sprite.
+   Each frame waits its turn: --frame is set in build.js. */
+.robot-frame {
+	opacity: 0;
+	animation: robot-frame 5.4s step-end infinite;
+	animation-delay: calc(var(--frame) * 450ms);
+}
+
+/* Earlier notes, with Topics beside them, or under them when there isn't
+   room. */
+.home-columns {
+	display: grid;
+	grid-template-columns: 2fr 1fr;
+	gap: 48px;
+	margin-top: 96px;
+}
+
+.home-columns section {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+}
+
+.home-columns h2 {
+	font-size: 32px;
+}
+
+@media (max-width: 760px) {
+	.home-columns {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* The number of notes with that tag. */
+.tag-count {
+	color: var(--muted);
+}
 
 .eyebrow {
 	color: var(--accent);
@@ -507,6 +591,16 @@ a:hover {
 	}
 }
 
+/* Shown for the first twelfth of the cycle, hidden for the rest. */
+@keyframes robot-frame {
+	0% {
+		opacity: 1;
+	}
+	8.333% {
+		opacity: 0;
+	}
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.cursor {
 		animation: none;
@@ -515,5 +609,14 @@ a:hover {
 	.button-front,
 	.button::after {
 		transition: none;
+	}
+
+	/* Keep to the first frame. */
+	.robot-frame {
+		animation: none;
+	}
+
+	.robot-frame:first-child {
+		opacity: 1;
 	}
 }

@@ -24,7 +24,8 @@ import { existsSync } from 'node:fs';
 import { cp, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { marked } from 'marked';
-import { drawSprite, FRAMES } from '../src/assets/sprites.js';
+import { drawSprite } from '../src/assets/sprites.js';
+import { ROBOT_COLOURS, ROBOT_FRAMES } from '../src/assets/robot.js';
 import { BAT, BIRD, SCENE, SCENE_COLOURS } from '../src/assets/footer-scene.js';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
@@ -36,18 +37,21 @@ const OUTPUT_DIR = path.join(ROOT, 'dist');
 const SITE_NAME = 'Pixel Facie';
 const POSTS_ON_HOME_PAGE = 3;
 
+// The robot next to the site name in the header, standing still on the first
+// frame of its reading animation, 2px per art pixel.
+const LOGO_ROBOT = `<svg class="logo-robot" width="36" height="46" viewBox="0 0 18 23" shape-rendering="crispEdges" aria-hidden="true">${drawSprite(ROBOT_FRAMES[0], ROBOT_COLOURS)}</svg>`;
+
 await build();
 
 async function build() {
 	await rm(OUTPUT_DIR, { recursive: true, force: true });
 	await cp(ASSETS_DIR, path.join(OUTPUT_DIR, 'assets'), { recursive: true });
 
-	// The site icon: the avatar's head, from the top of his cap down to his
-	// chin (the first 13 rows of the front frame). The icon can't read
-	// styles.css, so it sets the hair colour itself: the dark theme's --hair.
+	// The site icon: the robot's head, from its antenna down to its chin (the
+	// first 9 rows), centred in a square.
 	await writeFile(
 		path.join(OUTPUT_DIR, 'favicon.svg'),
-		`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -1 16 16" shape-rendering="crispEdges"><style>.px-hair { fill: #7a5233; }</style>${drawSprite(FRAMES.front.slice(0, 13))}</svg>\n`
+		`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -4.5 18 18" shape-rendering="crispEdges">${drawSprite(ROBOT_FRAMES[0].slice(0, 9), ROBOT_COLOURS)}</svg>\n`
 	);
 
 	// The footer scenery: the same scene in day colours with the lorikeet for
@@ -74,10 +78,28 @@ async function build() {
 
 	const posts = await loadPosts();
 
+	// Each tag's posts, newest first. Tags that differ only in capitals, such
+	// as WordPress and wordpress, are one tag, named after the first spelling.
+	const tags = new Map();
+	for (const post of posts) {
+		for (const tag of post.tags) {
+			const slug = tagSlug(tag);
+			if (!tags.has(slug)) {
+				tags.set(slug, { name: tag, posts: [] });
+			}
+			tags.get(slug).posts.push(post);
+		}
+	}
+
 	await writePage('index.html', {
 		title: SITE_NAME,
 		content: render(await loadTemplate('home'), {
-			latestPosts: renderPostList(posts.slice(0, POSTS_ON_HOME_PAGE)),
+			robotFrames: ROBOT_FRAMES.map(
+				(rows, i) =>
+					`<g class="robot-frame" style="--frame: ${i}">${drawSprite(rows, ROBOT_COLOURS)}</g>`
+			).join(''),
+			latestNote: renderLatestNote(posts[0]),
+			moreNotes: renderMoreNotes(posts, tags),
 		}),
 	});
 
@@ -95,19 +117,7 @@ async function build() {
 		}),
 	});
 
-	// One page per tag, listing its posts newest first. Tags that differ only
-	// in capitals, such as WordPress and wordpress, share a page, named after
-	// the first spelling.
-	const tags = new Map();
-	for (const post of posts) {
-		for (const tag of post.tags) {
-			const slug = tagSlug(tag);
-			if (!tags.has(slug)) {
-				tags.set(slug, { name: tag, posts: [] });
-			}
-			tags.get(slug).posts.push(post);
-		}
-	}
+	// One page per tag, listing its posts.
 	for (const [slug, tag] of tags) {
 		await writePage(`blog/tags/${slug}/index.html`, {
 			title: `${escapeHtml(tag.name)} · ${SITE_NAME}`,
@@ -120,21 +130,13 @@ async function build() {
 
 	const postTemplate = await loadTemplate('post');
 	for (const post of posts) {
-		const tagItems = post.tags.map(
-			(tag) =>
-				`<li><a href="/blog/tags/${tagSlug(tag)}/">${escapeHtml(tag)}</a></li>`
-		);
-
 		await writePage(`blog/${post.slug}/index.html`, {
 			title: `${escapeHtml(post.title)} · ${SITE_NAME}`,
 			content: render(postTemplate, {
 				title: escapeHtml(post.title),
 				date: post.date,
 				displayDate: formatDate(post.date),
-				// The list has no visible label, so screen readers get "Tags".
-				tags: tagItems.length
-					? `<ul class="post-tags" aria-label="Tags">${tagItems.join('')}</ul>`
-					: '',
+				tags: renderTags(post.tags),
 				image: post.image
 					? `<img class="post-image pixel-border" src="${escapeHtml(post.image)}" alt="${escapeHtml(post.imageAlt)}">`
 					: '',
@@ -233,6 +235,64 @@ function renderPostList(posts) {
 	return `<ul class="post-list">${items.join('')}\n</ul>`;
 }
 
+// The home page's Exhibit A card: the newest note's title, linking to it,
+// and its tags. With no notes yet, it says the first one is coming.
+function renderLatestNote(post) {
+	if (!post) {
+		return '<h2 id="exhibit-title">First note coming soon</h2>';
+	}
+	return `<h2 id="exhibit-title"><a href="/blog/${post.slug}/">${escapeHtml(post.title)}</a></h2>${renderTags(post.tags)}`;
+}
+
+// The home page's Earlier notes and Topics, under the card. Earlier notes
+// needs a second note, and Topics needs a tag.
+function renderMoreNotes(posts, tags) {
+	const earlier = posts.slice(1, 1 + POSTS_ON_HOME_PAGE);
+	const columns = [];
+
+	if (earlier.length) {
+		columns.push(`
+		<section aria-labelledby="earlier-title">
+			<div class="section-heading">
+				<h2 id="earlier-title">Earlier notes</h2>
+				<a href="/blog/">All notes ▸</a>
+			</div>
+			${renderPostList(earlier)}
+		</section>`);
+	}
+
+	if (tags.size) {
+		const items = [...tags]
+			.sort(([, a], [, b]) => a.name.localeCompare(b.name))
+			.map(
+				([slug, tag]) =>
+					`<li><a href="/blog/tags/${slug}/">${escapeHtml(tag.name)} <span class="tag-count">${tag.posts.length}</span></a></li>`
+			);
+		columns.push(`
+		<section aria-labelledby="topics-title">
+			<h2 id="topics-title">Topics</h2>
+			<ul class="post-tags">${items.join('')}</ul>
+		</section>`);
+	}
+
+	return columns.length
+		? `<div class="home-columns">${columns.join('')}\n</div>`
+		: '';
+}
+
+// A post's tags as pills, each linking to its tag's page.
+function renderTags(tags) {
+	if (!tags.length) {
+		return '';
+	}
+	const items = tags.map(
+		(tag) =>
+			`<li><a href="/blog/tags/${tagSlug(tag)}/">${escapeHtml(tag)}</a></li>`
+	);
+	// The list has no visible label, so screen readers get "Tags".
+	return `<ul class="post-tags" aria-label="Tags">${items.join('')}</ul>`;
+}
+
 // Templates
 
 async function loadTemplate(name) {
@@ -255,7 +315,10 @@ async function writePage(outputPath, { title, content }) {
 	const fullPath = path.join(OUTPUT_DIR, outputPath);
 
 	await mkdir(path.dirname(fullPath), { recursive: true });
-	await writeFile(fullPath, render(layout, { title, content }));
+	await writeFile(
+		fullPath,
+		render(layout, { title, content, logoRobot: LOGO_ROBOT })
+	);
 }
 
 // Helpers
