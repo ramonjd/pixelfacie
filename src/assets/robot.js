@@ -9,9 +9,9 @@ export const ROBOT_COLOURS = {
 	k: '#2a2e3a', // outline
 	g: '#c8ccd4', // head, hands
 	G: '#9aa0aa', // body
-	e: '#7ce38b', // eyes
-	a: '#7ce38b', // antenna, lit
-	A: '#3d6b45', // antenna, dim
+	e: '#47e5ff', // eyes
+	a: '#47e5ff', // antenna, lit
+	A: '#2a6f7c', // antenna, dim
 	d: '#b5524a', // book cover
 	D: '#7d3530', // book spine
 	y: '#ffb547', // title marks on the cover
