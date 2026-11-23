@@ -1,9 +1,6 @@
-import { setUpAvatarGame } from './avatar-game.js';
-
 const THEME_STORAGE_KEY = 'theme';
 
 setUpThemeToggle();
-setUpAvatarGame();
 
 function setUpThemeToggle() {
 	const button = document.querySelector('.theme-toggle');

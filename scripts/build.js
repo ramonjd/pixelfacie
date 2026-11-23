@@ -24,8 +24,7 @@ import { existsSync } from 'node:fs';
 import { cp, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { marked } from 'marked';
-import { drawSprite, FRAMES, ICONS } from '../src/assets/sprites.js';
-import { OUTFITS } from '../src/assets/outfits.js';
+import { drawSprite, FRAMES } from '../src/assets/sprites.js';
 import { BAT, BIRD, SCENE, SCENE_COLOURS } from '../src/assets/footer-scene.js';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
@@ -79,21 +78,12 @@ async function build() {
 		title: SITE_NAME,
 		content: render(await loadTemplate('home'), {
 			latestPosts: renderPostList(posts.slice(0, POSTS_ON_HOME_PAGE)),
-			avatar: drawSprite(FRAMES.front),
-			iconBook: drawSprite(ICONS.book),
-			iconGuitar: drawSprite(ICONS.guitar),
-			iconScales: drawSprite(ICONS.scales),
-			iconPalette: drawSprite(ICONS.palette),
 		}),
 	});
 
 	await writePage('about/index.html', {
 		title: `About · ${SITE_NAME}`,
-		content: render(await loadTemplate('about'), {
-			rockstar: drawSprite(OUTFITS.rockstar),
-			nerd: drawSprite(OUTFITS.nerd),
-			surfer: drawSprite(OUTFITS.surfer),
-		}),
+		content: render(await loadTemplate('about'), {}),
 	});
 
 	const blogTemplate = await loadTemplate('blog');

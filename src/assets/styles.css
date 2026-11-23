@@ -16,7 +16,6 @@
 	--highlight: #ffb547;
 	--hair: #7a5233;
 	--pants: #4a5a80;
-	--ground: #2b3242;
 }
 
 [data-theme="light"] {
@@ -31,7 +30,6 @@
 	--highlight: #a14a06;
 	--hair: #4a3020;
 	--pants: #3a4a6b;
-	--ground: #d8d1bc;
 }
 
 /* Base
@@ -178,7 +176,7 @@ a:hover {
 
 /* The footer runs the full width of the window. The scenery from
    footer-scene.js sits along its bottom edge and repeats sideways, 8px per
-   art pixel like the avatar, so 144px tall. The bottom padding keeps the text
+   art pixel, so 144px tall. The bottom padding keeps the text
    above it. */
 .site-footer {
 	margin-top: 96px;
@@ -204,32 +202,11 @@ a:hover {
 /* Home page
    ====================================================================== */
 
-.hero {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 56px;
-	padding-top: 48px;
-}
-
-.hero-text {
-	display: flex;
-	flex: 999 1 480px;
-	flex-direction: column;
-	gap: 24px;
-	min-width: 0;
-}
-
 .eyebrow {
 	color: var(--accent);
 	font-family: var(--pixel-font);
 	letter-spacing: 2px;
 	text-transform: uppercase;
-}
-
-.lead {
-	max-width: 34em;
-	font-size: 20px;
 }
 
 /* Sized to sit on a line of the intro text without pushing the lines apart.
@@ -292,199 +269,7 @@ a:hover {
 	transform: rotateX(0deg);
 }
 
-/* The hero's game. Everything inside the stage is placed on top of each
-   other: the ground, the items, the avatar, the bar and the overlay. */
-.avatar-stage {
-	position: relative;
-	flex: 1 1 320px;
-	max-width: 320px;
-	height: 280px;
-	margin: 0 auto;
-	overflow: hidden;
-	background: var(--surface-sunken);
-}
-
-.avatar-stage:focus-visible {
-	outline: 4px solid var(--highlight);
-	outline-offset: 6px;
-}
-
-.avatar {
-	position: absolute;
-	bottom: 36px;
-	left: 24px;
-	animation: bob 1.2s steps(2) infinite;
-}
-
-/* He only bobs while he stands facing front. */
-.avatar.is-moving {
-	animation: none;
-}
-
-.avatar.is-facing-left {
-	scale: -1 1;
-}
-
-/* The items sit at his fist height. --x is set in home.html, in art pixels. */
-.stage-world {
-	position: absolute;
-	inset: 0;
-}
-
-.stage-item {
-	position: absolute;
-	top: 160px;
-	left: calc(var(--x) * 8px);
-	width: 80px;
-	height: 80px;
-	transition: transform 0.35s steps(5), visibility 0s 0.35s;
-}
-
-/* Punched: it bounces up out of the stage, and its slot in the bar fills. */
-.stage-item.is-punched {
-	transform: translateY(-240px);
-	visibility: hidden;
-}
-
-.stage-item svg,
-.stage-slot svg {
-	display: block;
-	width: 100%;
-	height: 100%;
-}
-
-/* The bar of punched items along the top. */
-.stage-bar {
-	position: absolute;
-	top: 0;
-	right: 0;
-	left: 0;
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	height: 36px;
-	padding: 0 8px;
-	background: var(--surface);
-}
-
-.stage-slot {
-	width: 24px;
-	height: 24px;
-	padding: 0;
-	border: 0;
-	background: none;
-	cursor: pointer;
-}
-
-.stage-slot:disabled {
-	outline: 2px dashed var(--muted);
-	outline-offset: -2px;
-	cursor: default;
-}
-
-.stage-slot:disabled svg {
-	visibility: hidden;
-}
-
-/* The hint shows the keys, or "Tap him" on a touch screen. */
-.stage-hint {
-	position: absolute;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	color: var(--muted);
-	font-family: var(--pixel-font);
-	font-size: 14px;
-	line-height: 36px;
-	text-align: center;
-}
-
-.hint-tap {
-	display: none;
-}
-
-.avatar-stage.has-played .stage-hint {
-	visibility: hidden;
-}
-
-/* At an unpunched item, the hint comes back to say what to press. */
-.hint-punch,
-.avatar-stage.at-item .hint-keys,
-.avatar-stage.at-item .hint-tap {
-	display: none;
-}
-
-.avatar-stage.at-item .stage-hint {
-	visibility: visible;
-}
-
-.avatar-stage.at-item .hint-punch {
-	display: inline;
-}
-
-@media (pointer: coarse) {
-	.hint-keys {
-		display: none;
-	}
-
-	.hint-tap {
-		display: inline;
-	}
-}
-
-/* The overlay covers the play area below the bar, never the page. */
-.stage-overlay {
-	position: absolute;
-	inset: 36px 0 0;
-	width: auto;
-	max-width: none;
-	height: auto;
-	max-height: none;
-	margin: 0;
-	padding: 16px;
-	border: 0;
-	background: color-mix(in srgb, var(--bg) 80%, transparent);
-	color: var(--text);
-}
-
-.stage-overlay[open] {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.stage-card {
-	position: relative;
-	width: 100%;
-	max-width: 240px;
-	padding: 20px 16px 16px;
-	background: var(--surface);
-	text-align: center;
-}
-
-.stage-card-title {
-	margin-bottom: 8px;
-	font-size: 22px;
-}
-
-.stage-close {
-	position: absolute;
-	top: 2px;
-	right: 2px;
-	width: 32px;
-	height: 32px;
-	padding: 0;
-	border: 0;
-	background: none;
-	color: var(--text);
-	font-family: var(--pixel-font);
-	font-size: 22px;
-	line-height: 1;
-	cursor: pointer;
-}
-
-/* Pixel colours in src/assets/sprites.js that follow the theme. The darker
-   shades are mixed from the same colours. */
+/* Pixel colours in src/assets/sprites.js that follow the theme. */
 .px-hair {
 	fill: var(--hair);
 }
@@ -493,34 +278,8 @@ a:hover {
 	fill: var(--accent);
 }
 
-.px-sleeve {
-	fill: color-mix(in srgb, var(--accent) 75%, #000);
-}
-
 .px-pants {
 	fill: var(--pants);
-}
-
-.px-pants-far {
-	fill: color-mix(in srgb, var(--pants) 75%, #000);
-}
-
-.px-gold {
-	fill: var(--highlight);
-}
-
-.px-gold-shade {
-	fill: color-mix(in srgb, var(--highlight) 70%, #000);
-}
-
-/* Striped so you can see it move when the ground scrolls. */
-.ground {
-	position: absolute;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	height: 36px;
-	background: repeating-linear-gradient(90deg, var(--ground) 0 24px, color-mix(in srgb, var(--ground) 90%, var(--text)) 24px 48px);
 }
 
 .section {
@@ -539,25 +298,6 @@ a:hover {
 }
 
 .section-heading a {
-	font-family: var(--pixel-font);
-}
-
-.card-grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-	gap: 32px;
-}
-
-.card {
-	display: flex;
-	flex-direction: column;
-	gap: 14px;
-	padding: 28px;
-	background: var(--surface);
-}
-
-.card a {
-	margin-top: auto;
 	font-family: var(--pixel-font);
 }
 
@@ -704,8 +444,8 @@ a:hover {
 	display: block;
 }
 
-/* Each bullet is an 8px square, the size of one art pixel in the hero,
-   centred on the first line of the item. The zero-width space keeps Safari
+/* Each bullet is an 8px square, the size of one art pixel, centred
+   on the first line of the item. The zero-width space keeps Safari
    reading it as a list: VoiceOver drops list semantics when the bullets are
    removed, unless the items have ::before content. */
 .prose ul {
@@ -747,19 +487,6 @@ a:hover {
 	display: flow-root;
 }
 
-.about-sprites {
-	float: right;
-	margin: 0 0 24px 32px;
-	padding: 24px;
-	background: var(--surface-sunken);
-}
-
-.about-sprites svg {
-	display: block;
-	width: 192px;
-	height: auto;
-}
-
 /* Two columns when there's room, one when there isn't: a column is never
    narrower than 16em. */
 .about .prose {
@@ -771,35 +498,6 @@ a:hover {
 	break-inside: avoid;
 }
 
-/* On a phone the image sits above the text instead of beside it. */
-@media (max-width: 600px) {
-	.about-sprites {
-		float: none;
-		width: fit-content;
-		margin: 0 auto 32px;
-	}
-}
-
-/* One outfit at a time, 4 seconds each, swapping instantly like a game
-   sprite. Each one waits its turn: the second starts 4 seconds in, the
-   third 8 seconds in. */
-.outfit {
-	opacity: 0;
-	animation: outfit-turn 12s step-end infinite;
-}
-
-.outfit:nth-child(2) {
-	animation-delay: 4s;
-}
-
-.outfit:nth-child(3) {
-	animation-delay: 8s;
-}
-
-.about-sprites:hover .outfit {
-	animation-play-state: paused;
-}
-
 /* Motion
    ====================================================================== */
 
@@ -809,43 +507,13 @@ a:hover {
 	}
 }
 
-@keyframes bob {
-	50% {
-		transform: translateY(-6px);
-	}
-}
-
-/* Shown for the first third of the cycle, hidden for the rest. */
-@keyframes outfit-turn {
-	0% {
-		opacity: 1;
-	}
-	33.333% {
-		opacity: 0;
-	}
-}
-
 @media (prefers-reduced-motion: reduce) {
-	.cursor,
-	.avatar {
+	.cursor {
 		animation: none;
 	}
 
 	.button-front,
 	.button::after {
 		transition: none;
-	}
-
-	.stage-item {
-		transition: none;
-	}
-
-	/* Keep to the first outfit. */
-	.outfit {
-		animation: none;
-	}
-
-	.outfit:first-child {
-		opacity: 1;
 	}
 }
