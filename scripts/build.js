@@ -66,11 +66,11 @@ async function build() {
 		);
 	}
 
-	// Featured images are served from /blog/images/, videos from /blog/videos/.
+	// Featured images are served from /notes/images/, videos from /notes/videos/.
 	for (const folder of ['images', 'videos']) {
 		const source = path.join(POSTS_DIR, folder);
 		if (existsSync(source)) {
-			await cp(source, path.join(OUTPUT_DIR, 'blog', folder), {
+			await cp(source, path.join(OUTPUT_DIR, 'notes', folder), {
 				recursive: true,
 			});
 		}
@@ -108,29 +108,38 @@ async function build() {
 		content: render(await loadTemplate('about'), {}),
 	});
 
-	const blogTemplate = await loadTemplate('blog');
-	await writePage('blog/index.html', {
-		title: `Blog · ${SITE_NAME}`,
-		content: render(blogTemplate, {
-			heading: 'Save points',
-			posts: renderPostList(posts),
+	const notesTemplate = await loadTemplate('notes');
+	await writePage('notes/index.html', {
+		title: `Notes · ${SITE_NAME}`,
+		content: render(notesTemplate, {
+			heading: 'Notes',
+			posts: renderPostList(posts, { showTags: true }),
 		}),
 	});
 
-	// One page per tag, listing its posts.
+	await writePage('topics/index.html', {
+		title: `Topics · ${SITE_NAME}`,
+		content: render(await loadTemplate('topics'), {
+			topics: tags.size
+				? renderTopics(tags)
+				: '<p class="muted">No topics yet.</p>',
+		}),
+	});
+
+	// One page per topic, listing its notes.
 	for (const [slug, tag] of tags) {
-		await writePage(`blog/tags/${slug}/index.html`, {
+		await writePage(`topics/${slug}/index.html`, {
 			title: `${escapeHtml(tag.name)} · ${SITE_NAME}`,
-			content: render(blogTemplate, {
+			content: render(notesTemplate, {
 				heading: escapeHtml(tag.name),
-				posts: renderPostList(tag.posts),
+				posts: renderPostList(tag.posts, { showTags: true }),
 			}),
 		});
 	}
 
 	const postTemplate = await loadTemplate('post');
 	for (const post of posts) {
-		await writePage(`blog/${post.slug}/index.html`, {
+		await writePage(`notes/${post.slug}/index.html`, {
 			title: `${escapeHtml(post.title)} · ${SITE_NAME}`,
 			content: render(postTemplate, {
 				title: escapeHtml(post.title),
@@ -174,7 +183,8 @@ async function loadPost(file) {
 		title: meta.title,
 		date: meta.date,
 		draft: meta.draft === 'true',
-		image: meta.image ? `/blog/images/${meta.image}` : '',
+		summary: meta.summary ?? '',
+		image: meta.image ? `/notes/images/${meta.image}` : '',
 		imageAlt: meta.imageAlt ?? '',
 		tags: (meta.tags ?? '')
 			.split(',')
@@ -209,9 +219,11 @@ function parseFrontMatter(source) {
 	return { meta, body };
 }
 
-function renderPostList(posts) {
+// A list of notes, newest first: title and date, plus tag pills when
+// showTags is set.
+function renderPostList(posts, { showTags = false } = {}) {
 	if (posts.length === 0) {
-		return '<p class="muted">No posts yet.</p>';
+		return '<p class="muted">First note coming soon.</p>';
 	}
 
 	const items = posts.map((post) => {
@@ -219,15 +231,16 @@ function renderPostList(posts) {
 		// and screen readers skip it, since the title next to it is already a
 		// link to the same post.
 		const thumbnail = post.image
-			? `<a class="post-thumb-link" href="/blog/${post.slug}/" tabindex="-1" aria-hidden="true"><img class="post-thumb pixel-border" src="${escapeHtml(post.image)}" alt="" width="80" height="80" loading="lazy"></a>`
+			? `<a class="post-thumb-link" href="/notes/${post.slug}/" tabindex="-1" aria-hidden="true"><img class="post-thumb pixel-border" src="${escapeHtml(post.image)}" alt="" width="80" height="80" loading="lazy"></a>`
 			: '';
 
 		return `
 			<li>
 				${thumbnail}
 				<div class="post-list-text">
-					<a href="/blog/${post.slug}/">${escapeHtml(post.title)}</a>
+					<a class="post-list-title" href="/notes/${post.slug}/">${escapeHtml(post.title)}</a>
 					<time datetime="${post.date}">${formatDate(post.date)}</time>
+					${showTags ? renderTags(post.tags) : ''}
 				</div>
 			</li>`;
 	});
@@ -236,12 +249,16 @@ function renderPostList(posts) {
 }
 
 // The home page's Exhibit A card: the newest note's title, linking to it,
-// and its tags. With no notes yet, it says the first one is coming.
+// its summary and its tags. With no notes yet, it says the first one is
+// coming.
 function renderLatestNote(post) {
 	if (!post) {
 		return '<h2 id="exhibit-title">First note coming soon</h2>';
 	}
-	return `<h2 id="exhibit-title"><a href="/blog/${post.slug}/">${escapeHtml(post.title)}</a></h2>${renderTags(post.tags)}`;
+	const summary = post.summary
+		? `<p class="exhibit-summary">${escapeHtml(post.summary)}</p>`
+		: '';
+	return `<h2 id="exhibit-title"><a href="/notes/${post.slug}/">${escapeHtml(post.title)}</a></h2>${summary}${renderTags(post.tags)}`;
 }
 
 // The home page's Earlier notes and Topics, under the card. Earlier notes
@@ -255,23 +272,17 @@ function renderMoreNotes(posts, tags) {
 		<section aria-labelledby="earlier-title">
 			<div class="section-heading">
 				<h2 id="earlier-title">Earlier notes</h2>
-				<a href="/blog/">All notes ▸</a>
+				<a href="/notes/">All notes ▸</a>
 			</div>
 			${renderPostList(earlier)}
 		</section>`);
 	}
 
 	if (tags.size) {
-		const items = [...tags]
-			.sort(([, a], [, b]) => a.name.localeCompare(b.name))
-			.map(
-				([slug, tag]) =>
-					`<li><a href="/blog/tags/${slug}/">${escapeHtml(tag.name)} <span class="tag-count">${tag.posts.length}</span></a></li>`
-			);
 		columns.push(`
 		<section aria-labelledby="topics-title">
 			<h2 id="topics-title">Topics</h2>
-			<ul class="post-tags">${items.join('')}</ul>
+			${renderTopics(tags)}
 		</section>`);
 	}
 
@@ -280,14 +291,26 @@ function renderMoreNotes(posts, tags) {
 		: '';
 }
 
-// A post's tags as pills, each linking to its tag's page.
+// Every tag as a pill with its number of notes, sorted by name, each linking
+// to its topic page.
+function renderTopics(tags) {
+	const items = [...tags]
+		.sort(([, a], [, b]) => a.name.localeCompare(b.name))
+		.map(
+			([slug, tag]) =>
+				`<li><a href="/topics/${slug}/">${escapeHtml(tag.name)} <span class="tag-count">${tag.posts.length}</span></a></li>`
+		);
+	return `<ul class="post-tags">${items.join('')}</ul>`;
+}
+
+// A post's tags as pills, each linking to its topic page.
 function renderTags(tags) {
 	if (!tags.length) {
 		return '';
 	}
 	const items = tags.map(
 		(tag) =>
-			`<li><a href="/blog/tags/${tagSlug(tag)}/">${escapeHtml(tag)}</a></li>`
+			`<li><a href="/topics/${tagSlug(tag)}/">${escapeHtml(tag)}</a></li>`
 	);
 	// The list has no visible label, so screen readers get "Tags".
 	return `<ul class="post-tags" aria-label="Tags">${items.join('')}</ul>`;
