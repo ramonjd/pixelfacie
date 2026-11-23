@@ -1,14 +1,26 @@
-<!-- The header uses the blog post header styles. The rest is in "About page" in styles.css. -->
+<!-- The header uses the note page's header styles. The rest is in "About page" in styles.css. -->
 <article class="about page-top">
 	<header class="post-header">
-		<p class="eyebrow">Player profile</p>
 		<h1>About</h1>
 	</header>
 
-	<div class="prose">
-		<p>I'm Ramon: a full-stack web developer, UX designer and writer with more than 25 years of experience in media, communications, publishing and technology.</p>
-		<p>Currently I'm a code wrangler and WordPress Core committer at Automattic, working on making the block editor and WordPress core better for developers and users.</p>
-		<p>Previously BBC Music and Sky in London, Nokia and BILD.de in Berlin, and News Ltd in Sydney.</p>
-		<p>I'm interested in media tooling, content architecture, streamlining my AI workflows, and keeping my meat brain in shape.</p>
-	</div>
+	<!-- The footer's "Learning notes, not legal advice" links here. -->
+	<aside class="notice pixel-border" id="not-legal-advice" aria-labelledby="notice-title">
+		<h2 id="notice-title">Not legal advice</h2>
+		<p>[Placeholder: Ramon writes this notice.]</p>
+	</aside>
+
+	<section class="about-who" aria-labelledby="who-title">
+		<!-- Ramon's 16 × 20 avatar from src/assets/sprites.js, 4px per art pixel. -->
+		<svg class="about-avatar" width="64" height="80" viewBox="0 0 16 20" shape-rendering="crispEdges" role="img" aria-label="Pixel-art Ramon in a cap and headphones">{{avatar}}</svg>
+		<div>
+			<h2 id="who-title">Who's writing</h2>
+			<p>[Placeholder: Ramon writes this section.]</p>
+		</div>
+	</section>
+
+	<section aria-labelledby="why-title">
+		<h2 id="why-title">Why</h2>
+		<p>[Placeholder: Ramon writes this section.]</p>
+	</section>
 </article>

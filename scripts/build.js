@@ -24,7 +24,7 @@ import { existsSync } from 'node:fs';
 import { cp, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { marked } from 'marked';
-import { drawSprite } from '../src/assets/sprites.js';
+import { drawSprite, FRAMES } from '../src/assets/sprites.js';
 import { ROBOT_COLOURS, ROBOT_FRAMES } from '../src/assets/robot.js';
 import { BAT, BIRD, SCENE, SCENE_COLOURS } from '../src/assets/footer-scene.js';
 
@@ -105,7 +105,9 @@ async function build() {
 
 	await writePage('about/index.html', {
 		title: `About · ${SITE_NAME}`,
-		content: render(await loadTemplate('about'), {}),
+		content: render(await loadTemplate('about'), {
+			avatar: drawSprite(FRAMES.front),
+		}),
 	});
 
 	const notesTemplate = await loadTemplate('notes');
