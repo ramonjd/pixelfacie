@@ -135,8 +135,10 @@ a:hover {
 	color: var(--accent);
 }
 
-.muted {
+/* What a list says when it has nothing in it yet, in the reading serif. */
+.empty {
 	color: var(--muted);
+	font-family: var(--serif-font);
 }
 
 .container {
@@ -711,11 +713,14 @@ a.label:hover {
 /* About page
    ====================================================================== */
 
+/* The About text is read like a note, so it uses the reading serif. The
+   page heading keeps the dot-matrix font. */
 .about {
 	display: flex;
 	max-width: 40em;
 	flex-direction: column;
 	gap: 48px;
+	font-family: var(--serif-font);
 }
 
 .about .post-header {

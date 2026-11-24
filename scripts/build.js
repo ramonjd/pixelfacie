@@ -77,19 +77,19 @@ async function build() {
 	// motion. The moving picture leaves the windows and antenna out of the
 	// still drawing and adds them back as animated dots, so each is drawn
 	// once and its flicker shows.
-	const unlit = SCENE.map((row) => row.replace(/[wR]/g, '.'));
+	const fixedParts = SCENE.map((row) => row.replace(/[wR]/g, '.'));
 	for (const [theme, colours] of [
-		['dark', '--led-on: #ffb238; --led-off: #1c160c'],
-		['light', '--led-on: #9a5a00; --led-off: #e6dfd1'],
+		['dark', '--led-on: #ffb238'],
+		['light', '--led-on: #9a5a00'],
 	]) {
 		const noGlow = theme === 'light' ? '<style>.led-glow { display: none; }</style>' : '';
 		for (const [file, art] of [
-			[`footer-${theme}.svg`, drawLed(unlit, SCENE_LEVELS, 'scene', 'scene-0') + drawSceneMotion()],
+			[`footer-${theme}.svg`, drawLed(fixedParts, SCENE_LEVELS, 'scene', 'scene-0') + drawSceneMotion()],
 			[`footer-${theme}-still.svg`, drawLed(SCENE, SCENE_LEVELS, 'scene', 'scene-0')],
 		]) {
 			await writeFile(
 				path.join(OUTPUT_DIR, 'assets', file),
-				`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="18" viewBox="0 0 64 18" style="${colours}">${noGlow}${ledBase('scene', 64, 18, { unlit: true })}${art}</svg>\n`
+				`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="18" viewBox="0 0 64 18" style="${colours}">${noGlow}${ledBase('scene', 64, 18)}${art}</svg>\n`
 			);
 		}
 	}
@@ -157,7 +157,7 @@ async function build() {
 		content: render(await loadTemplate('topics'), {
 			topics: tags.size
 				? renderTopics(tags)
-				: '<p class="muted">No topics yet.</p>',
+				: '<p class="empty">No topics yet.</p>',
 		}),
 	});
 
@@ -259,7 +259,7 @@ function parseFrontMatter(source) {
 // the start of its row.
 function renderPostList(posts) {
 	if (posts.length === 0) {
-		return '<p class="muted">First note coming soon.</p>';
+		return '<p class="empty">First note coming soon.</p>';
 	}
 
 	const items = posts.map((post) => {
