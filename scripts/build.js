@@ -81,7 +81,7 @@ async function build() {
 	]) {
 		await writeFile(
 			path.join(OUTPUT_DIR, 'assets', file),
-			`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="18" viewBox="0 0 64 18">${ledBase('scene', 64, 18)}${art}</svg>\n`
+			`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="18" viewBox="0 0 64 18">${ledBase('scene', 64, 18, { unlit: true })}${art}</svg>\n`
 		);
 	}
 
@@ -113,7 +113,7 @@ async function build() {
 	await writePage('index.html', {
 		title: SITE_NAME,
 		content: render(await loadTemplate('home'), {
-			// The unlit dots come first, then a group holding only the 12
+			// The mask and blur come first, then a group holding only the 12
 			// frames, so the reduced-motion rule's .robot-frame:first-child
 			// still finds frame 0.
 			robotFrames:

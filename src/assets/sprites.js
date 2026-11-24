@@ -105,25 +105,28 @@ export function drawSprite(rows, colours = COLOURS) {
 }
 
 // Drawing art as LED dots, like a dot-matrix display: every pixel is a round
-// dot, lit amber at its level or left dark. Lit dots take their colour from
-// the --led-on and --led-off variables in styles.css, so they follow the
-// theme; in a standalone SVG file, which CSS can't reach, they fall back to
-// the amber and dark brown after the comma.
+// dot, lit amber at its level. Lit dots take their colour from the --led-on
+// variable in styles.css, so they follow the theme; in a standalone SVG file,
+// which CSS can't reach, they fall back to the amber after the comma. Unlit
+// dots, used only behind the footer scene, are a fixed dark brown.
 const LED_ON = 'var(--led-on, #ffb238)';
-const LED_OFF = 'var(--led-off, #1c160c)';
+const LED_OFF = '#1c160c';
 
 // The shared parts of one LED picture: the round-dot mask, the blur for the
-// glow, and a full layer of unlit dots. `id` must be unique on the page,
-// since the mask and blur are found by id. Draw the lit dots after it with
-// drawLed().
-export function ledBase(id, width, height) {
+// glow, and, when `unlit` is set, a full layer of unlit dots behind the art.
+// Characters like the robot leave it off and stand on the page itself. `id`
+// must be unique on the page, since the mask and blur are found by id. Draw
+// the lit dots after it with drawLed().
+export function ledBase(id, width, height, { unlit = false } = {}) {
 	return (
 		'<defs>' +
 		`<pattern id="${id}-dots" width="1" height="1" patternUnits="userSpaceOnUse"><circle cx="0.5" cy="0.5" r="0.4" fill="#fff" /></pattern>` +
 		`<mask id="${id}-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="${width}" height="${height}"><rect width="${width}" height="${height}" fill="url(#${id}-dots)" /></mask>` +
 		`<filter id="${id}-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="0.6" /></filter>` +
 		'</defs>' +
-		`<rect width="${width}" height="${height}" mask="url(#${id}-mask)" style="fill: ${LED_OFF}" />`
+		(unlit
+			? `<rect width="${width}" height="${height}" mask="url(#${id}-mask)" style="fill: ${LED_OFF}" />`
+			: '')
 	);
 }
 

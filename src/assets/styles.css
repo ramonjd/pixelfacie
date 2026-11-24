@@ -18,9 +18,8 @@
 	--accent-text: #0b0b0a;
 	--highlight: var(--accent);
 	--glow: 0 0 14px rgba(255, 178, 56, 0.4);
-	/* Lit and unlit dots in the LED art. */
+	/* Lit dots in the LED art. */
 	--led-on: #ffb238;
-	--led-off: #1c160c;
 	--hair: #7a5233;
 	--pants: #4a5a80;
 }
@@ -36,7 +35,6 @@
 	--accent-text: #f4f1ea;
 	--glow: none;
 	--led-on: #9a5a00;
-	--led-off: #e6dfd1;
 	--hair: #4a3020;
 	--pants: #3a4a6b;
 }
