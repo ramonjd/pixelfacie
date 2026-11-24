@@ -1,4 +1,4 @@
-# ramonopoly
+# Pixel Facie
 
 Pixel Facie: Ramon's learning notes on AI law, AI policy and whatever else comes up. Not legal advice.
 
