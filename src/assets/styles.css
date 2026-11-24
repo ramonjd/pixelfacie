@@ -49,6 +49,16 @@
 	color: var(--text);
 }
 
+/* On paper the LED art reads as printed dots, so it loses its glow; inside
+   a dark display panel it gets it back. */
+[data-theme="light"] .led-glow {
+	display: none;
+}
+
+.display .led-glow {
+	display: inline;
+}
+
 /* Base
    ====================================================================== */
 

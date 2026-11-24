@@ -26,8 +26,8 @@ import { existsSync } from 'node:fs';
 import { cp, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { marked } from 'marked';
-import { drawSprite, FRAMES } from '../src/assets/sprites.js';
-import { ROBOT_COLOURS, ROBOT_FRAMES } from '../src/assets/robot.js';
+import { AVATAR_LEVELS, drawLed, drawSprite, FRAMES, ledBase } from '../src/assets/sprites.js';
+import { ROBOT_FRAMES, ROBOT_LEVELS } from '../src/assets/robot.js';
 import { SCENE, SCENE_COLOURS } from '../src/assets/footer-scene.js';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
@@ -39,9 +39,22 @@ const OUTPUT_DIR = path.join(ROOT, 'dist');
 const SITE_NAME = 'Pixel Facie';
 const POSTS_ON_HOME_PAGE = 3;
 
-// The robot next to the site name in the header, standing still on the first
-// frame of its reading animation, 2px per art pixel.
-const LOGO_ROBOT = `<svg class="logo-robot" width="36" height="46" viewBox="0 0 18 23" shape-rendering="crispEdges" aria-hidden="true">${drawSprite(ROBOT_FRAMES[0], ROBOT_COLOURS)}</svg>`;
+// The robot next to the site name in the header, in LED dots, standing still
+// on the first frame of its reading animation, 2px per dot.
+const LOGO_ROBOT = `<svg class="logo-robot" width="36" height="46" viewBox="0 0 18 23" aria-hidden="true">${ledBase('logo', 18, 23)}${drawLed(ROBOT_FRAMES[0], ROBOT_LEVELS, 'logo', 'logo-0')}</svg>`;
+
+// The site icon's colours: square pixels, since LED dots blur into mush at
+// 16px. Each key is the robot's amber at its LED level, mixed into the dark
+// background.
+const FAVICON_COLOURS = Object.fromEntries(
+	Object.entries(ROBOT_LEVELS).map(([key, level]) => {
+		const mix = (amber, dark) => Math.round(dark + (amber - dark) * level);
+		const hex = [mix(0xff, 0x0b), mix(0xb2, 0x0b), mix(0x38, 0x0a)]
+			.map((channel) => channel.toString(16).padStart(2, '0'))
+			.join('');
+		return [key, `#${hex}`];
+	})
+);
 
 await build();
 
@@ -50,10 +63,10 @@ async function build() {
 	await cp(ASSETS_DIR, path.join(OUTPUT_DIR, 'assets'), { recursive: true });
 
 	// The site icon: the robot's head, from its antenna down to its chin (the
-	// first 9 rows), centred in a square.
+	// first 9 rows), centred in a dark square.
 	await writeFile(
 		path.join(OUTPUT_DIR, 'favicon.svg'),
-		`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -4.5 18 18" shape-rendering="crispEdges">${drawSprite(ROBOT_FRAMES[0].slice(0, 9), ROBOT_COLOURS)}</svg>\n`
+		`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -4.5 18 18" shape-rendering="crispEdges"><rect y="-4.5" width="18" height="18" fill="#0b0b0a" />${drawSprite(ROBOT_FRAMES[0].slice(0, 9), FAVICON_COLOURS)}</svg>\n`
 	);
 
 	// The footer scenery, in day colours for the light theme and night colours
@@ -104,10 +117,15 @@ async function build() {
 	await writePage('index.html', {
 		title: SITE_NAME,
 		content: render(await loadTemplate('home'), {
-			robotFrames: ROBOT_FRAMES.map(
-				(rows, i) =>
-					`<g class="robot-frame" style="--frame: ${i}">${drawSprite(rows, ROBOT_COLOURS)}</g>`
-			).join(''),
+			// The unlit dots come first, then a group holding only the 12
+			// frames, so the reduced-motion rule's .robot-frame:first-child
+			// still finds frame 0.
+			robotFrames:
+				ledBase('robot', 18, 23) +
+				`<g>${ROBOT_FRAMES.map(
+					(rows, i) =>
+						`<g class="robot-frame" style="--frame: ${i}">${drawLed(rows, ROBOT_LEVELS, 'robot', `robot-${i}`)}</g>`
+				).join('')}</g>`,
 			latestNote: renderLatestNote(posts[0]),
 			moreNotes: renderMoreNotes(posts, tags),
 		}),
@@ -116,7 +134,7 @@ async function build() {
 	await writePage('about/index.html', {
 		title: `About · ${SITE_NAME}`,
 		content: render(await loadTemplate('about'), {
-			avatar: drawSprite(FRAMES.front),
+			avatar: ledBase('avatar', 16, 20) + drawLed(FRAMES.front, AVATAR_LEVELS, 'avatar', 'avatar-0'),
 		}),
 	});
 

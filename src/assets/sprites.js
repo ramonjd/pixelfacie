@@ -22,6 +22,24 @@ const COLOURS = {
 // the end as its own rect.
 const PUPIL = 'o';
 
+// How brightly each avatar pixel lights up when the avatar is drawn as LED
+// dots (see drawLed below), from 1 (fully lit) down. Pixels at 0, like the
+// pupils, stay dark.
+export const AVATAR_LEVELS = {
+	K: 1,
+	W: 1,
+	R: 1,
+	C: 0.75,
+	m: 0.75,
+	b: 0.45,
+	g: 0.45,
+	h: 0.3,
+	p: 0.3,
+	s: 0.3,
+	k: 0,
+	o: 0,
+};
+
 // The avatar, 16 × 20, facing front.
 export const FRAMES = {
 	front: [
@@ -84,4 +102,57 @@ export function drawSprite(rows, colours = COLOURS) {
 	});
 
 	return [...rects, ...pupils].join('');
+}
+
+// Drawing art as LED dots, like a dot-matrix display: every pixel is a round
+// dot, lit amber at its level or left dark. Lit dots take their colour from
+// the --led-on and --led-off variables in styles.css, so they follow the
+// theme; in a standalone SVG file, which CSS can't reach, they fall back to
+// the amber and dark brown after the comma.
+const LED_ON = 'var(--led-on, #ffb238)';
+const LED_OFF = 'var(--led-off, #1c160c)';
+
+// The shared parts of one LED picture: the round-dot mask, the blur for the
+// glow, and a full layer of unlit dots. `id` must be unique on the page,
+// since the mask and blur are found by id. Draw the lit dots after it with
+// drawLed().
+export function ledBase(id, width, height) {
+	return (
+		'<defs>' +
+		`<pattern id="${id}-dots" width="1" height="1" patternUnits="userSpaceOnUse"><circle cx="0.5" cy="0.5" r="0.4" fill="#fff" /></pattern>` +
+		`<mask id="${id}-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="${width}" height="${height}"><rect width="${width}" height="${height}" fill="url(#${id}-dots)" /></mask>` +
+		`<filter id="${id}-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="0.6" /></filter>` +
+		'</defs>' +
+		`<rect width="${width}" height="${height}" mask="url(#${id}-mask)" style="fill: ${LED_OFF}" />`
+	);
+}
+
+// The lit dots of one grid, with `levels` saying how brightly each key
+// lights up. Rows are still drawn as runs by drawSprite, then cut into dots
+// by the mask from ledBase(). The fully lit dots also get a soft glow: a
+// blurred copy of them, drawn underneath. `frameId` must be unique on the
+// page too.
+export function drawLed(rows, levels, id, frameId) {
+	// drawSprite treats o as a pupil, so give it another letter here.
+	const grid = rows.map((row) => row.replaceAll(PUPIL, '*'));
+	const keyLevels = { ...levels, '*': levels[PUPIL] ?? 0 };
+	const allKeys = Object.fromEntries(Object.keys(keyLevels).map((key) => [key, 'led']));
+	const atLevel = (level) =>
+		drawSprite(
+			grid.map((row) => [...row].map((key) => (keyLevels[key] === level ? key : '.')).join('')),
+			allKeys
+		);
+
+	const dimLevels = [...new Set(Object.values(keyLevels))]
+		.filter((level) => level > 0 && level < 1)
+		.sort();
+	const dim = dimLevels
+		.map((level) => `<g fill-opacity="${level}">${atLevel(level)}</g>`)
+		.join('');
+
+	return (
+		`<use href="#${frameId}-lit" class="led-glow" filter="url(#${id}-glow)" />` +
+		`<g mask="url(#${id}-mask)" style="fill: ${LED_ON}">${dim}</g>` +
+		`<g id="${frameId}-lit" mask="url(#${id}-mask)" style="fill: ${LED_ON}">${atLevel(1)}</g>`
+	);
 }

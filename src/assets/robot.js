@@ -1,20 +1,22 @@
-// The Pixel Facie robot, reading a red book: 18 × 23, drawn as a text grid
-// like the art in sprites.js. The build script draws it into the header, the
-// home page and the site icon.
+// The Pixel Facie robot, reading a book: 18 × 23, drawn as a text grid like
+// the art in sprites.js. The build script draws it in LED dots into the
+// header and the home page, and in square pixels for the site icon. The
+// outline is k, not o, because drawSprite treats o as a pupil.
 
-// The colours are the same in both themes: the dark outline shows on the
-// light theme and the light grey body shows on the dark one. The outline is
-// k, not o, because drawSprite treats o as a pupil.
-export const ROBOT_COLOURS = {
-	k: '#2a2e3a', // outline
-	g: '#c8ccd4', // head, hands
-	G: '#9aa0aa', // body
-	e: '#47e5ff', // eyes
-	a: '#47e5ff', // antenna, lit
-	A: '#2a6f7c', // antenna, dim
-	d: '#b5524a', // book cover
-	D: '#7d3530', // book spine
-	y: '#ffb547', // title marks on the cover
+// How brightly each key lights up when the robot is drawn as LED dots (see
+// drawLed in sprites.js): the outline, eyes, lit antenna and the book's title
+// marks are fully lit, the book is part-lit, and the head and body glow
+// faintly so the outline reads.
+export const ROBOT_LEVELS = {
+	k: 1,
+	e: 1,
+	a: 1,
+	y: 1,
+	d: 0.55,
+	D: 0.35,
+	A: 0.2,
+	g: 0.16,
+	G: 0.1,
 };
 
 // The robot without its eyes. frame() adds them.
