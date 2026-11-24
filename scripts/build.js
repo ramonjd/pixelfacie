@@ -139,7 +139,7 @@ async function build() {
 		title: `Notes · ${SITE_NAME}`,
 		content: render(notesTemplate, {
 			heading: 'Notes',
-			posts: renderPostList(posts, { showTags: true }),
+			posts: renderPostList(posts),
 		}),
 	});
 
@@ -158,7 +158,7 @@ async function build() {
 			title: `${escapeHtml(tag.name)} · ${SITE_NAME}`,
 			content: render(notesTemplate, {
 				heading: escapeHtml(tag.name),
-				posts: renderPostList(tag.posts, { showTags: true }),
+				posts: renderPostList(tag.posts),
 			}),
 		});
 	}
@@ -245,9 +245,10 @@ function parseFrontMatter(source) {
 	return { meta, body };
 }
 
-// A list of notes, newest first: title and date, plus tag pills when
-// showTags is set.
-function renderPostList(posts, { showTags = false } = {}) {
+// A list of notes, newest first, one row each: the date, the title and the
+// note's first topic. A note with a featured image gets a small thumbnail at
+// the start of its row.
+function renderPostList(posts) {
 	if (posts.length === 0) {
 		return '<p class="muted">First note coming soon.</p>';
 	}
@@ -257,37 +258,40 @@ function renderPostList(posts, { showTags = false } = {}) {
 		// and screen readers skip it, since the title next to it is already a
 		// link to the same post.
 		const thumbnail = post.image
-			? `<a class="post-thumb-link" href="/notes/${post.slug}/" tabindex="-1" aria-hidden="true"><img class="post-thumb pixel-border" src="${escapeHtml(post.image)}" alt="" width="80" height="80" loading="lazy"></a>`
+			? `<a class="post-thumb-link" href="/notes/${post.slug}/" tabindex="-1" aria-hidden="true"><img class="post-thumb" src="${escapeHtml(post.image)}" alt="" width="48" height="48" loading="lazy"></a>`
+			: '';
+		const topic = post.tags.length
+			? `<a class="post-row-topic label" href="/topics/${tagSlug(post.tags[0])}/">${escapeHtml(post.tags[0])}</a>`
 			: '';
 
 		return `
-			<li>
+			<li class="post-row">
 				${thumbnail}
-				<div class="post-list-text">
-					<a class="post-list-title" href="/notes/${post.slug}/">${escapeHtml(post.title)}</a>
-					<time datetime="${post.date}">${formatDate(post.date)}</time>
-					${showTags ? renderTags(post.tags) : ''}
-				</div>
+				<time class="post-row-date label" datetime="${post.date}">${formatDate(post.date)}</time>
+				<a class="post-row-title" href="/notes/${post.slug}/">${escapeHtml(post.title)}</a>
+				${topic}
 			</li>`;
 	});
 
 	return `<ul class="post-list">${items.join('')}\n</ul>`;
 }
 
-// The home page's Exhibit A card: the newest note's title, linking to it,
-// its summary and its tags. With no notes yet, it says the first one is
-// coming.
+// The home page's Exhibit A: a small label with the date, then the newest
+// note's title, linking to it, its summary and its topics. With no notes yet,
+// it says the first one is coming.
 function renderLatestNote(post) {
+	const label = (date) =>
+		`<p class="label"><span class="label-accent">Exhibit A</span> · Latest note${date}</p>`;
 	if (!post) {
-		return '<h2 id="exhibit-title">First note coming soon</h2>';
+		return `${label('')}<h2 id="exhibit-title">First note coming soon</h2>`;
 	}
 	const summary = post.summary
 		? `<p class="exhibit-summary">${escapeHtml(post.summary)}</p>`
 		: '';
-	return `<h2 id="exhibit-title"><a href="/notes/${post.slug}/">${escapeHtml(post.title)}</a></h2>${summary}${renderTags(post.tags)}`;
+	return `${label(` · <time datetime="${post.date}">${formatDate(post.date)}</time>`)}<h2 id="exhibit-title"><a href="/notes/${post.slug}/">${escapeHtml(post.title)}</a></h2>${summary}${renderTags(post.tags)}`;
 }
 
-// The home page's Earlier notes and Topics, under the card. Earlier notes
+// The home page's Earlier notes and Topics, under Exhibit A. Earlier notes
 // needs a second note, and Topics needs a tag.
 function renderMoreNotes(posts, tags) {
 	const earlier = posts.slice(1, 1 + POSTS_ON_HOME_PAGE);
@@ -297,8 +301,8 @@ function renderMoreNotes(posts, tags) {
 		columns.push(`
 		<section aria-labelledby="earlier-title">
 			<div class="section-heading">
-				<h2 id="earlier-title">Earlier notes</h2>
-				<a href="/notes/">All notes ▸</a>
+				<h2 id="earlier-title" class="label">Earlier notes</h2>
+				<a class="label" href="/notes/">All notes →</a>
 			</div>
 			${renderPostList(earlier)}
 		</section>`);
@@ -307,7 +311,9 @@ function renderMoreNotes(posts, tags) {
 	if (tags.size) {
 		columns.push(`
 		<section aria-labelledby="topics-title">
-			<h2 id="topics-title">Topics</h2>
+			<div class="section-heading">
+				<h2 id="topics-title" class="label">Topics</h2>
+			</div>
 			${renderTopics(tags)}
 		</section>`);
 	}
@@ -317,8 +323,8 @@ function renderMoreNotes(posts, tags) {
 		: '';
 }
 
-// Every tag as a pill with its number of notes, sorted by name, each linking
-// to its topic page.
+// Every tag as a small label with its number of notes, sorted by name, each
+// linking to its topic page.
 function renderTopics(tags) {
 	const items = [...tags]
 		.sort(([, a], [, b]) => a.name.localeCompare(b.name))
@@ -329,7 +335,7 @@ function renderTopics(tags) {
 	return `<ul class="post-tags">${items.join('')}</ul>`;
 }
 
-// A post's tags as pills, each linking to its topic page.
+// A post's tags as small labels, each linking to its topic page.
 function renderTags(tags) {
 	if (!tags.length) {
 		return '';

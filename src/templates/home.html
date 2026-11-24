@@ -1,14 +1,14 @@
-<h1 class="tagline page-top">First impressions of AI law</h1>
+<!-- The heading and the robot share a dark display panel, dark in both
+     themes. The robot's 12 frames take turns, 450ms each (see "Home page"
+     in styles.css). The art comes from src/assets/robot.js. -->
+<section class="display home-display" aria-labelledby="tagline">
+	<h1 id="tagline" class="tagline">First impressions of AI law</h1>
+	<svg class="home-robot" width="90" height="115" viewBox="0 0 18 23" aria-hidden="true">{{robotFrames}}</svg>
+</section>
 
-<!-- The newest note. The robot's 12 frames take turns, 450ms each (see
-     "Home page" in styles.css). The art comes from src/assets/robot.js. -->
-<article class="exhibit pixel-border" aria-labelledby="exhibit-title">
-	<svg class="exhibit-robot" width="90" height="115" viewBox="0 0 18 23" aria-hidden="true">{{robotFrames}}</svg>
-
-	<div class="exhibit-text">
-		<p class="eyebrow">Exhibit A · Latest note</p>
-		{{latestNote}}
-	</div>
+<!-- The newest note. -->
+<article class="exhibit" aria-labelledby="exhibit-title">
+	{{latestNote}}
 </article>
 
 {{moreNotes}}

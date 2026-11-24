@@ -280,34 +280,73 @@ a:hover {
 /* Home page
    ====================================================================== */
 
-.tagline {
-	font-size: clamp(32px, 5vw, 56px);
+/* Small mono labels: dates, topics, section names. */
+.label {
+	color: var(--muted);
+	font-family: var(--mono-font);
+	font-size: 12px;
+	font-weight: 400;
+	letter-spacing: 0.12em;
+	line-height: 1.5;
+	text-transform: uppercase;
 }
 
-/* The newest note, with the robot reading beside it. */
-.exhibit {
+a.label {
+	text-decoration: none;
+}
+
+a.label:hover {
+	color: var(--accent);
+}
+
+.label-accent {
+	color: var(--accent);
+}
+
+/* The heading and the robot in a dark display panel, the robot under the
+   heading on a phone. */
+.home-display {
 	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
+	align-items: flex-end;
+	justify-content: space-between;
 	gap: 24px 40px;
 	margin-top: 40px;
-	padding: 32px;
-	background: var(--surface);
+	padding: 40px;
+	border: 1px solid var(--line);
+	border-radius: 8px;
 }
 
-.exhibit-robot {
+.tagline {
+	max-width: 11em;
+	font-size: clamp(36px, 6vw, 64px);
+}
+
+.home-robot {
 	flex: none;
 }
 
-.exhibit-text {
+@media (max-width: 600px) {
+	.home-display {
+		flex-direction: column;
+		align-items: flex-start;
+		padding: 28px 24px;
+	}
+}
+
+/* The newest note: a label, then its title, summary and topics, under a
+   thin line. */
+.exhibit {
 	display: flex;
-	flex: 1 1 280px;
 	flex-direction: column;
-	gap: 16px;
+	gap: 12px;
+	margin-top: 48px;
+	padding-top: 20px;
+	border-top: 1px solid var(--line);
 }
 
 .exhibit h2 {
-	font-size: clamp(28px, 4vw, 40px);
+	max-width: 24em;
+	font-size: clamp(24px, 3.4vw, 34px);
 }
 
 .exhibit h2 a {
@@ -320,6 +359,7 @@ a:hover {
 }
 
 .exhibit-summary {
+	max-width: 40em;
 	color: var(--muted);
 }
 
@@ -337,17 +377,13 @@ a:hover {
 	display: grid;
 	grid-template-columns: 2fr 1fr;
 	gap: 48px;
-	margin-top: 96px;
+	margin-top: 72px;
 }
 
 .home-columns section {
 	display: flex;
 	flex-direction: column;
-	gap: 24px;
-}
-
-.home-columns h2 {
-	font-size: 32px;
+	gap: 16px;
 }
 
 @media (max-width: 760px) {
@@ -358,14 +394,7 @@ a:hover {
 
 /* The number of notes with that tag. */
 .tag-count {
-	color: var(--muted);
-}
-
-.eyebrow {
 	color: var(--accent);
-	font-family: var(--mono-font);
-	letter-spacing: 2px;
-	text-transform: uppercase;
 }
 
 /* Sized to sit on a line of the intro text without pushing the lines apart.
@@ -456,10 +485,6 @@ a:hover {
 	gap: 12px;
 }
 
-.section-heading a {
-	font-family: var(--mono-font);
-}
-
 .tag {
 	align-self: flex-start;
 	padding: 2px 8px;
@@ -478,62 +503,81 @@ a:hover {
 	margin-top: 48px;
 }
 
+/* A list of notes, one row each: date, title, topic. On a phone the date
+   and topic share a line above the title. */
 .post-list {
 	margin: 0;
 	padding: 0;
 	list-style: none;
-	border-bottom: 2px dashed var(--muted);
+	border-bottom: 1px solid var(--line);
 }
 
-.post-list > li {
-	display: flex;
-	align-items: center;
-	gap: 24px;
-	padding: 22px 0;
-	border-top: 2px dashed var(--muted);
+.post-row {
+	display: grid;
+	grid-template-areas: "date title topic";
+	grid-template-columns: 8em 1fr auto;
+	align-items: baseline;
+	gap: 4px 20px;
+	padding: 14px 0;
+	border-top: 1px solid var(--line);
+}
+
+.post-row:has(.post-thumb-link) {
+	grid-template-areas: "thumb date title topic";
+	grid-template-columns: 48px 8em 1fr auto;
 }
 
 .post-thumb-link {
-	flex: none;
+	grid-area: thumb;
+	align-self: center;
 }
 
 /* The post's featured image, cropped to a small square. */
 .post-thumb {
 	display: block;
-	width: 80px;
-	height: 80px;
+	width: 48px;
+	height: 48px;
+	border-radius: 4px;
 	object-fit: cover;
 }
 
-/* The title, with the date on the right, or under the title when there isn't room. */
-.post-list-text {
-	flex: 1;
-	display: flex;
-	flex-wrap: wrap;
-	align-items: baseline;
-	justify-content: space-between;
-	gap: 8px 24px;
+.post-row-date {
+	grid-area: date;
 }
 
-.post-list-title {
+.post-row-title {
+	grid-area: title;
 	color: var(--text);
-	font-size: 22px;
 	font-weight: 600;
 	text-decoration: none;
 }
 
-.post-list-title:hover {
+.post-row-title:hover {
 	color: var(--accent);
 }
 
-.post-list time {
-	color: var(--muted);
-	font-family: var(--mono-font);
+.post-row-topic {
+	grid-area: topic;
 }
 
-/* The note's tags get a line of their own, under the title and date. */
-.post-list .post-tags {
-	flex-basis: 100%;
+@media (max-width: 600px) {
+	.post-row {
+		grid-template-areas:
+			"date topic"
+			"title title";
+		grid-template-columns: auto 1fr;
+	}
+
+	.post-row:has(.post-thumb-link) {
+		grid-template-areas:
+			"thumb date topic"
+			"thumb title title";
+		grid-template-columns: 48px auto 1fr;
+	}
+
+	.post-row-topic {
+		justify-self: end;
+	}
 }
 
 .post {
@@ -551,30 +595,23 @@ a:hover {
 	font-size: clamp(36px, 5vw, 56px);
 }
 
-/* The post's tags, as small pills under the date. */
+/* A note's topics, as small mono labels. */
 .post-tags {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 12px;
+	gap: 6px 18px;
 	margin: 0;
 	padding: 0;
 	list-style: none;
 }
 
-/* The 2px shadows notch the corners, like the buttons. */
 .post-tags a {
-	display: block;
-	padding: 2px 10px;
-	background: var(--surface-sunken);
-	box-shadow:
-		-2px 0 0 0 var(--surface-sunken),
-		2px 0 0 0 var(--surface-sunken),
-		0 -2px 0 0 var(--surface-sunken),
-		0 2px 0 0 var(--surface-sunken);
-	color: var(--text);
+	color: var(--muted);
 	font-family: var(--mono-font);
-	font-size: 14px;
+	font-size: 12px;
+	letter-spacing: 0.12em;
 	text-decoration: none;
+	text-transform: uppercase;
 }
 
 .post-tags a:hover {
