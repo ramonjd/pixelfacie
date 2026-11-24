@@ -1,42 +1,62 @@
 /* Colours
    ======================================================================
    Dark is the default. The inline script in layout.html sets data-theme
-   on <html> from the saved choice or the system setting. */
+   on <html> from the saved choice or the system setting. One signal
+   colour, amber, on near-black; the light theme is warm paper with a
+   darker amber so it stays readable. */
 
 :root,
-[data-theme="dark"] {
-	--bg: #0f1117;
-	--surface: #171a23;
-	--surface-sunken: #1f2330;
-	--text: #eceae6;
-	--muted: #9aa0aa;
-	--line: #eceae6;
-	--accent: #47e5ff;
-	--accent-text: #0f1117;
-	--highlight: #ff4fd8;
+[data-theme="dark"],
+.display {
+	--bg: #0b0b0a;
+	--surface: #141412;
+	--surface-sunken: #1c1b18;
+	--text: #e9e7e2;
+	--muted: #8a8780;
+	--line: #1f1f1d;
+	--accent: #ffb238;
+	--accent-text: #0b0b0a;
+	--highlight: var(--accent);
+	--glow: 0 0 14px rgba(255, 178, 56, 0.4);
+	/* Lit and unlit dots in the LED art. */
+	--led-on: #ffb238;
+	--led-off: #1c160c;
 	--hair: #7a5233;
 	--pants: #4a5a80;
 }
 
 [data-theme="light"] {
-	--bg: #f4f1e8;
-	--surface: #ffffff;
-	--surface-sunken: #eae5d6;
-	--text: #16181d;
-	--muted: #575d68;
-	--line: #16181d;
-	--accent: #2c5a9e;
-	--accent-text: #ffffff;
-	--highlight: #5b2bb8;
+	--bg: #f4f1ea;
+	--surface: #efebe3;
+	--surface-sunken: #e3ddd0;
+	--text: #1a1814;
+	--muted: #6b665d;
+	--line: #dcd6ca;
+	--accent: #9a5a00;
+	--accent-text: #f4f1ea;
+	--glow: none;
+	--led-on: #9a5a00;
+	--led-off: #e6dfd1;
 	--hair: #4a3020;
 	--pants: #3a4a6b;
+}
+
+/* A dark display panel, like the LED counter it borrows from. It keeps the
+   dark colours in both themes, so the amber always glows on black. The
+   selector sits in the dark block above; this gives it its own paint. */
+.display {
+	background: var(--bg);
+	color: var(--text);
 }
 
 /* Base
    ====================================================================== */
 
 :root {
-	--pixel-font: "Pixelify Sans", monospace;
+	/* Dot-matrix lettering, for the logo and page headings only. */
+	--display-font: Doto, "IBM Plex Mono", monospace;
+	/* Small labels: dates, nav, tags, the footer. */
+	--mono-font: "IBM Plex Mono", ui-monospace, monospace;
 	--body-font: Inter, system-ui, sans-serif;
 }
 
@@ -66,32 +86,43 @@ h1,
 h2,
 h3 {
 	margin: 0;
-	font-family: var(--pixel-font);
-	line-height: 1.1;
+	line-height: 1.15;
 }
 
 h1 {
-	font-size: clamp(48px, 7vw, 88px);
+	color: var(--accent);
+	font-family: var(--display-font);
+	font-size: clamp(40px, 6vw, 72px);
+	font-weight: 900;
+	line-height: 1.05;
+	text-shadow: var(--glow);
 }
 
 h2 {
-	font-size: 44px;
+	font-size: 28px;
+	font-weight: 600;
+	letter-spacing: -0.01em;
 }
 
 h3 {
-	font-size: 26px;
+	font-size: 20px;
+	font-weight: 600;
 }
 
 p {
 	margin: 0;
 }
 
+/* Links are text with an amber underline, turning amber on hover. */
 a {
-	color: var(--accent);
+	color: var(--text);
+	text-decoration-color: var(--accent);
+	text-decoration-thickness: 1px;
+	text-underline-offset: 3px;
 }
 
 a:hover {
-	color: var(--highlight);
+	color: var(--accent);
 }
 
 .muted {
@@ -133,19 +164,21 @@ a:hover {
 	align-items: center;
 	justify-content: space-between;
 	gap: 16px;
-	padding-top: 28px;
-	padding-bottom: 28px;
+	padding-top: 24px;
+	padding-bottom: 20px;
+	border-bottom: 1px solid var(--line);
 }
 
 .logo {
 	display: flex;
 	align-items: center;
 	gap: 12px;
-	color: var(--text);
-	font-family: var(--pixel-font);
-	font-size: 28px;
-	font-weight: 700;
+	color: var(--accent);
+	font-family: var(--display-font);
+	font-size: 24px;
+	font-weight: 900;
 	text-decoration: none;
+	text-shadow: var(--glow);
 }
 
 .logo-robot {
@@ -153,7 +186,6 @@ a:hover {
 }
 
 .cursor {
-	color: var(--accent);
 	animation: blink 1s steps(1) infinite;
 }
 
@@ -161,27 +193,40 @@ a:hover {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
-	gap: 8px;
+	gap: 4px;
 }
 
 .site-nav a {
 	padding: 12px;
-	font-family: var(--pixel-font);
+	color: var(--muted);
+	font-family: var(--mono-font);
+	font-size: 13px;
+	letter-spacing: 0.1em;
 	text-decoration: none;
+	text-transform: uppercase;
+}
+
+.site-nav a:hover {
+	color: var(--accent);
 }
 
 .theme-toggle {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: 44px;
-	height: 44px;
+	width: 40px;
+	height: 40px;
 	margin-left: 12px;
-	border: 0;
-	background: var(--surface);
-	color: var(--text);
+	border: 1px solid var(--line);
+	border-radius: 6px;
+	background: transparent;
+	color: var(--muted);
 	fill: currentColor;
 	cursor: pointer;
+}
+
+.theme-toggle:hover {
+	color: var(--accent);
 }
 
 /* Show the sun in dark mode and the moon in light mode. */
@@ -198,7 +243,7 @@ a:hover {
 	padding-top: 32px;
 	padding-bottom: calc(144px + 24px);
 	color: var(--muted);
-	font-family: var(--pixel-font);
+	font-family: var(--mono-font);
 	font-size: 16px;
 	background: url("/assets/footer-night.svg") left bottom / auto 144px repeat-x;
 }
@@ -300,7 +345,7 @@ a:hover {
 
 .eyebrow {
 	color: var(--accent);
-	font-family: var(--pixel-font);
+	font-family: var(--mono-font);
 	letter-spacing: 2px;
 	text-transform: uppercase;
 }
@@ -313,7 +358,7 @@ a:hover {
 .button {
 	display: inline-block;
 	position: relative;
-	font-family: var(--pixel-font);
+	font-family: var(--mono-font);
 	font-size: 16px;
 	line-height: 1;
 	text-decoration: none;
@@ -394,7 +439,7 @@ a:hover {
 }
 
 .section-heading a {
-	font-family: var(--pixel-font);
+	font-family: var(--mono-font);
 }
 
 .tag {
@@ -402,7 +447,7 @@ a:hover {
 	padding: 2px 8px;
 	border: 2px solid var(--highlight);
 	color: var(--highlight);
-	font-family: var(--pixel-font);
+	font-family: var(--mono-font);
 	font-size: 14px;
 	letter-spacing: 1px;
 	text-transform: uppercase;
@@ -465,7 +510,7 @@ a:hover {
 
 .post-list time {
 	color: var(--muted);
-	font-family: var(--pixel-font);
+	font-family: var(--mono-font);
 }
 
 /* The note's tags get a line of their own, under the title and date. */
@@ -509,7 +554,7 @@ a:hover {
 		0 -2px 0 0 var(--surface-sunken),
 		0 2px 0 0 var(--surface-sunken);
 	color: var(--text);
-	font-family: var(--pixel-font);
+	font-family: var(--mono-font);
 	font-size: 14px;
 	text-decoration: none;
 }
