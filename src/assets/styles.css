@@ -66,6 +66,8 @@
 	/* Small labels: dates, nav, tags, the footer. */
 	--mono-font: "IBM Plex Mono", ui-monospace, monospace;
 	--body-font: Inter, system-ui, sans-serif;
+	/* A note's title and text, for reading. Same family as the mono labels. */
+	--serif-font: "IBM Plex Serif", Georgia, serif;
 }
 
 * {
@@ -574,7 +576,7 @@ a.label:hover {
 }
 
 /* The note's header: a back link, a label line with the date and topics,
-   then the title, in Inter rather than the dot-matrix heading font. */
+   then the title, in the serif rather than the dot-matrix heading font. */
 .post-header {
 	display: flex;
 	flex-direction: column;
@@ -594,10 +596,10 @@ a.label:hover {
 
 .post .post-header h1 {
 	color: var(--text);
-	font-family: var(--body-font);
+	font-family: var(--serif-font);
 	font-size: clamp(32px, 4.6vw, 48px);
 	font-weight: 600;
-	letter-spacing: -0.02em;
+	letter-spacing: -0.01em;
 	line-height: 1.12;
 	text-shadow: none;
 }
@@ -633,9 +635,10 @@ a.label:hover {
 	margin-bottom: 40px;
 }
 
-/* The reading column: about 65 characters a line. */
+/* The reading column, in the serif: about 65 characters a line. */
 .prose {
 	max-width: 65ch;
+	font-family: var(--serif-font);
 	line-height: 1.7;
 }
 
