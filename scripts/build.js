@@ -407,10 +407,22 @@ async function writePage(outputPath, { title, content }) {
 	const layout = await loadTemplate('layout');
 	const fullPath = path.join(OUTPUT_DIR, outputPath);
 
+	// The menu marks the section this page belongs to, found from the first
+	// folder of its address: a note counts as Notes, a topic as Topics.
+	const section = outputPath.split('/')[0];
+	const current = (name) => (section === name ? ' aria-current="page"' : '');
+
 	await mkdir(path.dirname(fullPath), { recursive: true });
 	await writeFile(
 		fullPath,
-		render(layout, { title, content, logoRobot: LOGO_ROBOT })
+		render(layout, {
+			title,
+			content,
+			logoRobot: LOGO_ROBOT,
+			notesCurrent: current('notes'),
+			topicsCurrent: current('topics'),
+			aboutCurrent: current('about'),
+		})
 	);
 }
 
