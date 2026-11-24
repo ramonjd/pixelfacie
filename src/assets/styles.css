@@ -245,21 +245,29 @@ a:hover {
 	display: none;
 }
 
-/* The footer runs the full width of the window. The cyber grid from
-   footer-scene.js sits along its bottom edge and repeats sideways, 8px per
-   art pixel, so 144px tall. The bottom padding keeps the text above it. */
+/* The footer runs the full width of the window as a dark display panel in
+   both themes. The cyber grid from footer-scene.js, in amber LED dots, sits
+   along its bottom edge and repeats sideways, 6px per dot, so 108px tall.
+   The bottom padding keeps the text above it. */
 .site-footer {
 	margin-top: 96px;
-	padding-top: 32px;
-	padding-bottom: calc(144px + 24px);
+	padding-top: 28px;
+	padding-bottom: calc(108px + 24px);
+	border-top: 1px solid var(--line);
 	color: var(--muted);
 	font-family: var(--mono-font);
-	font-size: 16px;
-	background: url("/assets/footer-night.svg") left bottom / auto 144px repeat-x;
+	font-size: 12px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	background: var(--bg) url("/assets/footer.svg") left bottom / auto 108px repeat-x;
 }
 
-[data-theme="light"] .site-footer {
-	background-image: url("/assets/footer-day.svg");
+.site-footer a {
+	color: var(--muted);
+}
+
+.site-footer a:hover {
+	color: var(--accent);
 }
 
 .site-footer-text {
@@ -709,13 +717,9 @@ a:hover {
 		transition: none;
 	}
 
-	/* The footer's still pictures, without the flickering lights. */
+	/* The footer's still picture, without the flickering lights. */
 	.site-footer {
-		background-image: url("/assets/footer-night-still.svg");
-	}
-
-	[data-theme="light"] .site-footer {
-		background-image: url("/assets/footer-day-still.svg");
+		background-image: url("/assets/footer-still.svg");
 	}
 
 	/* Keep to the first frame. */

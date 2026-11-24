@@ -28,7 +28,7 @@ import path from 'node:path';
 import { marked } from 'marked';
 import { AVATAR_LEVELS, drawLed, drawSprite, FRAMES, ledBase } from '../src/assets/sprites.js';
 import { ROBOT_FRAMES, ROBOT_LEVELS } from '../src/assets/robot.js';
-import { SCENE, SCENE_COLOURS } from '../src/assets/footer-scene.js';
+import { SCENE, SCENE_LEVELS } from '../src/assets/footer-scene.js';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const TEMPLATES_DIR = path.join(ROOT, 'src', 'templates');
@@ -69,24 +69,20 @@ async function build() {
 		`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -4.5 18 18" shape-rendering="crispEdges"><rect y="-4.5" width="18" height="18" fill="#0b0b0a" />${drawSprite(ROBOT_FRAMES[0].slice(0, 9), FAVICON_COLOURS)}</svg>\n`
 	);
 
-	// The footer scenery, in day colours for the light theme and night colours
-	// for the dark one. Each gets a moving picture and a still one, which the
-	// CSS uses when the reader asks for less motion.
-	for (const theme of ['day', 'night']) {
-		const colours = SCENE_COLOURS[theme];
-		// The moving picture leaves the windows and antenna out of the still
-		// drawing and adds them back as animated pixels, so each is drawn once
-		// and its flicker shows.
-		const unlit = SCENE.map((row) => row.replace(/[wR]/g, '.'));
-		for (const [file, art] of [
-			[`footer-${theme}.svg`, drawSprite(unlit, colours) + drawSceneMotion(colours)],
-			[`footer-${theme}-still.svg`, drawSprite(SCENE, colours)],
-		]) {
-			await writeFile(
-				path.join(OUTPUT_DIR, 'assets', file),
-				`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="18" viewBox="0 0 64 18" shape-rendering="crispEdges">${art}</svg>\n`
-			);
-		}
+	// The footer scenery in amber LED dots. The footer is a dark panel in
+	// both themes, so one colourway does. It gets a moving picture and a still
+	// one, which the CSS uses when the reader asks for less motion. The moving
+	// picture leaves the windows and antenna out of the still drawing and adds
+	// them back as animated dots, so each is drawn once and its flicker shows.
+	const unlit = SCENE.map((row) => row.replace(/[wR]/g, '.'));
+	for (const [file, art] of [
+		['footer.svg', drawLed(unlit, SCENE_LEVELS, 'scene', 'scene-0') + drawSceneMotion()],
+		['footer-still.svg', drawLed(SCENE, SCENE_LEVELS, 'scene', 'scene-0')],
+	]) {
+		await writeFile(
+			path.join(OUTPUT_DIR, 'assets', file),
+			`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="18" viewBox="0 0 64 18">${ledBase('scene', 64, 18)}${art}</svg>\n`
+		);
 	}
 
 	// Featured images are served from /notes/images/, videos from /notes/videos/.
@@ -346,25 +342,33 @@ function renderTags(tags) {
 	return `<ul class="post-tags" aria-label="Tags">${items.join('')}</ul>`;
 }
 
-// The footer scene's moving parts, as SVG animation. Each window dims for a
-// moment once every 6 seconds, at a delay worked out from where it is so they
-// take turns. The antenna light pulses, and two data pulses run along the
-// floor's grid lines, one each way.
-function drawSceneMotion(colours) {
+// The footer scene's moving parts, as SVG animation, drawn under the scene's
+// round-dot mask so they light whole dots. Each window dims for a moment once
+// every 6 seconds, at a delay worked out from where it is so they take turns.
+// The antenna light pulses, and two data pulses run along the floor's grid
+// lines, one each way, stepping a whole dot at a time.
+function drawSceneMotion() {
 	const parts = [];
 	SCENE.forEach((row, y) => {
 		[...row].forEach((key, x) => {
 			if (key === 'w') {
 				const delay = ((((x * 7 + y * 13) % 23) / 23) * 6).toFixed(2);
-				parts.push(`<rect x="${x}" y="${y}" width="1" height="1" fill="${colours.w}"><animate attributeName="opacity" values="1;1;0.15;1" keyTimes="0;0.8;0.85;1" dur="6s" begin="${delay}s" repeatCount="indefinite" /></rect>`);
+				parts.push(`<rect x="${x}" y="${y}" width="1" height="1" fill-opacity="${SCENE_LEVELS.w}"><animate attributeName="opacity" values="1;1;0.15;1" keyTimes="0;0.8;0.85;1" dur="6s" begin="${delay}s" repeatCount="indefinite" /></rect>`);
 			} else if (key === 'R') {
-				parts.push(`<rect x="${x}" y="${y}" width="1" height="1" fill="${colours.R}"><animate attributeName="opacity" values="1;0.2;1" dur="1.6s" repeatCount="indefinite" /></rect>`);
+				parts.push(`<rect x="${x}" y="${y}" width="1" height="1"><animate attributeName="opacity" values="1;0.2;1" dur="1.6s" repeatCount="indefinite" /></rect>`);
 			}
 		});
 	});
-	parts.push(`<rect y="12" width="3" height="1" fill="${colours.n}"><animate attributeName="x" from="-3" to="64" dur="4s" repeatCount="indefinite" /></rect>`);
-	parts.push(`<rect y="14" width="2" height="1" fill="${colours.n}"><animate attributeName="x" from="64" to="-2" dur="6s" repeatCount="indefinite" /></rect>`);
-	return parts.join('');
+	const steps = (from, to) => {
+		const values = [];
+		for (let x = from; from < to ? x <= to : x >= to; x += from < to ? 1 : -1) {
+			values.push(x);
+		}
+		return values.join(';');
+	};
+	parts.push(`<rect y="12" width="3" height="1"><animate attributeName="x" values="${steps(-3, 64)}" calcMode="discrete" dur="4s" repeatCount="indefinite" /></rect>`);
+	parts.push(`<rect y="14" width="2" height="1"><animate attributeName="x" values="${steps(64, -2)}" calcMode="discrete" dur="6s" repeatCount="indefinite" /></rect>`);
+	return `<g mask="url(#scene-mask)" fill="#ffb238">${parts.join('')}</g>`;
 }
 
 // Templates
