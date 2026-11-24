@@ -106,11 +106,11 @@ export function drawSprite(rows, colours = COLOURS) {
 
 // Drawing art as LED dots, like a dot-matrix display: every pixel is a round
 // dot, lit amber at its level. Lit dots take their colour from the --led-on
-// variable in styles.css, so they follow the theme; in a standalone SVG file,
-// which CSS can't reach, they fall back to the amber after the comma. Unlit
-// dots, used only behind the footer scene, are a fixed dark brown.
+// variable in styles.css, so they follow the theme. Unlit dots, used only
+// behind the footer scene, take --led-off, which the footer pictures set
+// themselves. Without either, they fall back to the colours after the comma.
 const LED_ON = 'var(--led-on, #ffb238)';
-const LED_OFF = '#1c160c';
+const LED_OFF = 'var(--led-off, #1c160c)';
 
 // The shared parts of one LED picture: the round-dot mask, the blur for the
 // glow, and, when `unlit` is set, a full layer of unlit dots behind the art.

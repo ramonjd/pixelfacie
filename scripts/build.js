@@ -69,20 +69,29 @@ async function build() {
 		`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -4.5 18 18" shape-rendering="crispEdges"><rect y="-4.5" width="18" height="18" fill="#0b0b0a" />${drawSprite(ROBOT_FRAMES[0].slice(0, 9), FAVICON_COLOURS)}</svg>\n`
 	);
 
-	// The footer scenery in amber LED dots. The footer is a dark panel in
-	// both themes, so one colourway does. It gets a moving picture and a still
-	// one, which the CSS uses when the reader asks for less motion. The moving
-	// picture leaves the windows and antenna out of the still drawing and adds
-	// them back as animated dots, so each is drawn once and its flicker shows.
+	// The footer scenery in LED dots, one colourway per theme: amber glowing
+	// on black for the dark theme, dark amber printed on paper, with no glow,
+	// for the light one. CSS can't reach into a picture used as a background,
+	// so each file sets its own dot colours. Each theme gets a moving picture
+	// and a still one, which the CSS uses when the reader asks for less
+	// motion. The moving picture leaves the windows and antenna out of the
+	// still drawing and adds them back as animated dots, so each is drawn
+	// once and its flicker shows.
 	const unlit = SCENE.map((row) => row.replace(/[wR]/g, '.'));
-	for (const [file, art] of [
-		['footer.svg', drawLed(unlit, SCENE_LEVELS, 'scene', 'scene-0') + drawSceneMotion()],
-		['footer-still.svg', drawLed(SCENE, SCENE_LEVELS, 'scene', 'scene-0')],
+	for (const [theme, colours] of [
+		['dark', '--led-on: #ffb238; --led-off: #1c160c'],
+		['light', '--led-on: #9a5a00; --led-off: #e6dfd1'],
 	]) {
-		await writeFile(
-			path.join(OUTPUT_DIR, 'assets', file),
-			`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="18" viewBox="0 0 64 18">${ledBase('scene', 64, 18, { unlit: true })}${art}</svg>\n`
-		);
+		const noGlow = theme === 'light' ? '<style>.led-glow { display: none; }</style>' : '';
+		for (const [file, art] of [
+			[`footer-${theme}.svg`, drawLed(unlit, SCENE_LEVELS, 'scene', 'scene-0') + drawSceneMotion()],
+			[`footer-${theme}-still.svg`, drawLed(SCENE, SCENE_LEVELS, 'scene', 'scene-0')],
+		]) {
+			await writeFile(
+				path.join(OUTPUT_DIR, 'assets', file),
+				`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="18" viewBox="0 0 64 18" style="${colours}">${noGlow}${ledBase('scene', 64, 18, { unlit: true })}${art}</svg>\n`
+			);
+		}
 	}
 
 	// Featured images are served from /notes/images/, videos from /notes/videos/.
@@ -374,7 +383,7 @@ function drawSceneMotion() {
 	};
 	parts.push(`<rect y="12" width="3" height="1"><animate attributeName="x" values="${steps(-3, 64)}" calcMode="discrete" dur="4s" repeatCount="indefinite" /></rect>`);
 	parts.push(`<rect y="14" width="2" height="1"><animate attributeName="x" values="${steps(64, -2)}" calcMode="discrete" dur="6s" repeatCount="indefinite" /></rect>`);
-	return `<g mask="url(#scene-mask)" fill="#ffb238">${parts.join('')}</g>`;
+	return `<g mask="url(#scene-mask)" style="fill: var(--led-on)">${parts.join('')}</g>`;
 }
 
 // Templates
