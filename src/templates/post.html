@@ -1,9 +1,11 @@
 <article class="post page-top">
 	<header class="post-header">
-		<p><a href="/notes/">◂ All notes</a></p>
+		<a class="label" href="/notes/">← All notes</a>
+		<div class="post-meta">
+			<time class="label" datetime="{{date}}">{{displayDate}}</time>
+			{{tags}}
+		</div>
 		<h1>{{title}}</h1>
-		<time class="muted" datetime="{{date}}">{{displayDate}}</time>
-		{{tags}}
 	</header>
 
 	{{image}}

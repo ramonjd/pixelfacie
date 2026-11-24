@@ -173,7 +173,7 @@ async function build() {
 				displayDate: formatDate(post.date),
 				tags: renderTags(post.tags),
 				image: post.image
-					? `<img class="post-image pixel-border" src="${escapeHtml(post.image)}" alt="${escapeHtml(post.imageAlt)}">`
+					? `<img class="post-image" src="${escapeHtml(post.image)}" alt="${escapeHtml(post.imageAlt)}">`
 					: '',
 				body: post.html,
 			}),
