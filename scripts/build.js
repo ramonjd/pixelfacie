@@ -43,6 +43,7 @@ const SITE_URL = 'https://pixelfacie.com';
 // own summary instead.
 const SITE_DESCRIPTION = 'First impressions of AI law. Learning notes, not legal advice.';
 const POSTS_ON_HOME_PAGE = 3;
+const TOPICS_ON_HOME_PAGE = 6;
 
 // The robot next to the site name in the header, in LED dots, standing still
 // on the first frame of its reading animation, 2px per dot.
@@ -161,7 +162,7 @@ async function build() {
 		title: `Topics · ${SITE_NAME}`,
 		content: render(await loadTemplate('topics'), {
 			topics: tags.size
-				? renderTopics(tags)
+				? renderTopics([...tags].sort(([, a], [, b]) => a.name.localeCompare(b.name)))
 				: '<p class="empty">No topics yet.</p>',
 		}),
 	});
@@ -436,12 +437,17 @@ function renderMoreNotes(posts, tags) {
 	}
 
 	if (tags.size) {
+		// The topics with the most notes, ties in alphabetical order.
+		const topTopics = [...tags]
+			.sort(([, a], [, b]) => b.posts.length - a.posts.length || a.name.localeCompare(b.name))
+			.slice(0, TOPICS_ON_HOME_PAGE);
 		columns.push(`
 		<section aria-labelledby="topics-title">
 			<div class="section-heading">
 				<h2 id="topics-title" class="label">Topics</h2>
+				<a class="label" href="/topics/">All topics →</a>
 			</div>
-			${renderTopics(tags)}
+			${renderTopics(topTopics)}
 		</section>`);
 	}
 
@@ -450,15 +456,13 @@ function renderMoreNotes(posts, tags) {
 		: '';
 }
 
-// Every tag as a pill with its number of notes, sorted by name, each linking
-// to its topic page.
+// Tags as pills with their number of notes, in the order given, each linking
+// to its topic page. Takes [slug, tag] pairs.
 function renderTopics(tags) {
-	const items = [...tags]
-		.sort(([, a], [, b]) => a.name.localeCompare(b.name))
-		.map(
-			([slug, tag]) =>
-				`<li><a class="tag-pill" href="/topics/${slug}/"><span>${escapeHtml(tag.name)}</span><span class="tag-count">${tag.posts.length}</span></a></li>`
-		);
+	const items = tags.map(
+		([slug, tag]) =>
+			`<li><a class="tag-pill" href="/topics/${slug}/"><span>${escapeHtml(tag.name)}</span><span class="tag-count">${tag.posts.length}</span></a></li>`
+	);
 	return `<ul class="post-tags">${items.join('')}</ul>`;
 }
 
