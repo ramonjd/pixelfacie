@@ -68,7 +68,6 @@
 	--display-font: Doto, "IBM Plex Mono", monospace;
 	/* Small labels: dates, nav, tags, the footer. */
 	--mono-font: "IBM Plex Mono", ui-monospace, monospace;
-	--body-font: Inter, system-ui, sans-serif;
 	/* A note's title and text, for reading. Same family as the mono labels. */
 	--serif-font: "IBM Plex Serif", Georgia, serif;
 }
@@ -86,7 +85,7 @@ body {
 	margin: 0;
 	background: var(--bg);
 	color: var(--text);
-	font-family: var(--body-font);
+	font-family: var(--serif-font);
 	font-size: 18px;
 	line-height: 1.6;
 }
