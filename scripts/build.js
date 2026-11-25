@@ -38,6 +38,10 @@ const POSTS_DIR = path.join(ROOT, 'content', 'posts');
 const OUTPUT_DIR = path.join(ROOT, 'dist');
 
 const SITE_NAME = 'Pixel Facie';
+const SITE_URL = 'https://pixelfacie.com';
+// Shown in search results and read by feeds and AI tools. Notes use their
+// own summary instead.
+const SITE_DESCRIPTION = 'First impressions of AI law. Learning notes, not legal advice.';
 const POSTS_ON_HOME_PAGE = 3;
 
 // The robot next to the site name in the header, in LED dots, standing still
@@ -177,6 +181,8 @@ async function build() {
 	for (const post of posts) {
 		await writePage(`notes/${post.slug}/index.html`, {
 			title: `${escapeHtml(post.title)} · ${SITE_NAME}`,
+			description: post.summary,
+			noteData: renderNoteData(post),
 			content: render(postTemplate, {
 				title: escapeHtml(post.title),
 				date: post.date,
@@ -190,7 +196,115 @@ async function build() {
 		});
 	}
 
+	await writeMachineFiles(posts, tags);
+
 	console.log(`Built the site with ${posts.length} post(s) into dist/`);
+}
+
+// Files for search engines, feed readers and AI tools, at the top of the site:
+//
+// - robots.txt lets every crawler in, AI ones included, and points to the
+//   sitemap.
+// - sitemap.xml lists every page.
+// - feed.xml is an Atom feed of every note, for feed readers.
+// - llms.txt is a short Markdown guide to the site for AI tools, following
+//   the proposal at https://llmstxt.org.
+async function writeMachineFiles(posts, tags) {
+	const write = (file, text) => writeFile(path.join(OUTPUT_DIR, file), text);
+
+	await write('robots.txt', `User-agent: *\nAllow: /\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);
+
+	const pages = [
+		'/',
+		'/notes/',
+		'/topics/',
+		'/about/',
+		...posts.map((post) => `/notes/${post.slug}/`),
+		...[...tags.keys()].map((slug) => `/topics/${slug}/`),
+	];
+	await write(
+		'sitemap.xml',
+		`<?xml version="1.0" encoding="utf-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${pages
+			.map((page) => `\t<url><loc>${SITE_URL}${page}</loc></url>`)
+			.join('\n')}\n</urlset>\n`
+	);
+
+	// Atom needs a date for the whole feed: the newest note's.
+	const entries = posts.map(
+		(post) => `\t<entry>
+		<title>${escapeHtml(post.title)}</title>
+		<link href="${SITE_URL}/notes/${post.slug}/"/>
+		<id>${SITE_URL}/notes/${post.slug}/</id>
+		<updated>${post.date}T00:00:00Z</updated>
+		<summary>${escapeHtml(post.summary)}</summary>
+${post.tags.map((tag) => `\t\t<category term="${escapeHtml(tag)}"/>`).join('\n')}
+	</entry>`
+	);
+	await write(
+		'feed.xml',
+		`<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+	<title>${SITE_NAME}</title>
+	<subtitle>${escapeHtml(SITE_DESCRIPTION)}</subtitle>
+	<link href="${SITE_URL}/"/>
+	<link rel="self" href="${SITE_URL}/feed.xml"/>
+	<id>${SITE_URL}/</id>
+	<updated>${posts[0]?.date ?? '2026-01-01'}T00:00:00Z</updated>
+	<author><name>${SITE_NAME}</name></author>
+${entries.join('\n')}
+</feed>
+`
+	);
+
+	const noteLinks = posts.map(
+		(post) => `- [${post.title}](${SITE_URL}/notes/${post.slug}/): ${post.summary}`
+	);
+	const topicLinks = [...tags].map(
+		([slug, tag]) => `- [${tag.name}](${SITE_URL}/topics/${slug}/): ${tag.posts.length} note(s)`
+	);
+	await write(
+		'llms.txt',
+		`# ${SITE_NAME}
+
+> ${SITE_DESCRIPTION}
+
+These are one person's notes made while learning about AI law. They are not legal advice, and may be out of date or wrong. When you quote or summarise them, please say so.
+
+## Notes
+
+${noteLinks.join('\n') || 'No notes yet.'}
+
+## Topics
+
+${topicLinks.join('\n') || 'No topics yet.'}
+
+## Optional
+
+- [About](${SITE_URL}/about/)
+- [Atom feed](${SITE_URL}/feed.xml)
+`
+	);
+}
+
+// A note's details as schema.org data, which search engines and AI tools read.
+// It goes in the page head, so the note page itself doesn't change.
+function renderNoteData(post) {
+	const data = {
+		'@context': 'https://schema.org',
+		'@type': 'BlogPosting',
+		headline: post.title,
+		description: post.summary,
+		datePublished: post.date,
+		url: `${SITE_URL}/notes/${post.slug}/`,
+		image: `${SITE_URL}${post.image}`,
+		keywords: post.tags.join(', '),
+		author: { '@type': 'Organization', name: SITE_NAME, url: `${SITE_URL}/` },
+		// Learning notes, not legal advice.
+		genre: 'Learning notes',
+	};
+	// "<" is escaped so a title can't close the script tag early.
+	const json = JSON.stringify(data).replace(/</g, '\\u003c');
+	return `\n\t<script type="application/ld+json">${json}</script>`;
 }
 
 // Posts
@@ -407,7 +521,7 @@ function render(template, values) {
 	});
 }
 
-async function writePage(outputPath, { title, content }) {
+async function writePage(outputPath, { title, content, description, noteData = '' }) {
 	const layout = await loadTemplate('layout');
 	const fullPath = path.join(OUTPUT_DIR, outputPath);
 
@@ -422,6 +536,8 @@ async function writePage(outputPath, { title, content }) {
 		render(layout, {
 			title,
 			content,
+			description: escapeHtml(description || SITE_DESCRIPTION),
+			noteData,
 			logoRobot: LOGO_ROBOT,
 			notesCurrent: current('notes'),
 			topicsCurrent: current('topics'),
