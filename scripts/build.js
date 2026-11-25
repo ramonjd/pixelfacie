@@ -274,7 +274,7 @@ function renderPostList(posts) {
 			? `<a class="post-thumb-link" href="/notes/${post.slug}/" tabindex="-1" aria-hidden="true"><img class="post-thumb" src="${escapeHtml(post.image)}" alt="" width="48" height="48" loading="lazy"></a>`
 			: '';
 		const topic = post.tags.length
-			? `<a class="post-row-topic label" href="/topics/${tagSlug(post.tags[0])}/">${escapeHtml(post.tags[0])}</a>`
+			? `<a class="post-row-topic tag-pill" href="/topics/${tagSlug(post.tags[0])}/"><span>${escapeHtml(post.tags[0])}</span></a>`
 			: '';
 
 		return `
@@ -336,26 +336,26 @@ function renderMoreNotes(posts, tags) {
 		: '';
 }
 
-// Every tag as a small label with its number of notes, sorted by name, each
-// linking to its topic page.
+// Every tag as a pill with its number of notes, sorted by name, each linking
+// to its topic page.
 function renderTopics(tags) {
 	const items = [...tags]
 		.sort(([, a], [, b]) => a.name.localeCompare(b.name))
 		.map(
 			([slug, tag]) =>
-				`<li><a href="/topics/${slug}/">${escapeHtml(tag.name)} <span class="tag-count">${tag.posts.length}</span></a></li>`
+				`<li><a class="tag-pill" href="/topics/${slug}/"><span>${escapeHtml(tag.name)}</span><span class="tag-count">${tag.posts.length}</span></a></li>`
 		);
 	return `<ul class="post-tags">${items.join('')}</ul>`;
 }
 
-// A post's tags as small labels, each linking to its topic page.
+// A post's tags as pills, each linking to its topic page.
 function renderTags(tags) {
 	if (!tags.length) {
 		return '';
 	}
 	const items = tags.map(
 		(tag) =>
-			`<li><a href="/topics/${tagSlug(tag)}/">${escapeHtml(tag)}</a></li>`
+			`<li><a class="tag-pill" href="/topics/${tagSlug(tag)}/"><span>${escapeHtml(tag)}</span></a></li>`
 	);
 	// The list has no visible label, so screen readers get "Tags".
 	return `<ul class="post-tags" aria-label="Tags">${items.join('')}</ul>`;
