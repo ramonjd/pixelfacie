@@ -47,7 +47,7 @@ The home page shows the newest note on its "Exhibit A" card, with the next three
 summary: A first pass at the risk tiers, in plain words.
 ```
 
-To give a note a featured image, put the file in `content/posts/images/` and name it in the front matter, with a short description for people who can't see it:
+Every note needs a featured image. Put the file in `content/posts/images/` and name it in the front matter, with a short description for people who can't see it. The build stops with an error if a note that isn't a draft is missing either line:
 
 ```md
 image: state-of-mind.jpg

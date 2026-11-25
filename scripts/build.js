@@ -12,8 +12,9 @@
 // note out of the build, and `summary: one line` to show a summary on the
 // home page card.
 //
-// To give a note a featured image, put the file in content/posts/images and
-// add `image: file-name.jpg` and `imageAlt: what the image shows`.
+// Every note needs a featured image: put the file in content/posts/images and
+// add `image: file-name.jpg` and `imageAlt: what the image shows`. The build
+// stops if a note that isn't a draft is missing either.
 //
 // To tag a note, add `tags: EU AI Act, Policy`. Each tag gets a page at
 // /topics/eu-ai-act/ listing its notes, and /topics/ lists every tag.
@@ -211,6 +212,9 @@ async function loadPost(file) {
 
 	if (!meta.title || !meta.date) {
 		throw new Error(`${file} needs a title and a date in its front matter.`);
+	}
+	if (meta.draft !== 'true' && (!meta.image || !meta.imageAlt)) {
+		throw new Error(`${file} needs an image and an imageAlt in its front matter.`);
 	}
 
 	return {
