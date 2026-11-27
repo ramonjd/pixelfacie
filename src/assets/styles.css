@@ -346,9 +346,6 @@ a.label:hover {
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
-	margin-top: 48px;
-	padding-top: 20px;
-	border-top: 1px solid var(--line);
 }
 
 .exhibit h2 {
@@ -378,19 +375,26 @@ a.label:hover {
 	animation-delay: calc(var(--frame) * 450ms);
 }
 
-/* Earlier notes, with Topics beside them, or under them when there isn't
-   room. */
+/* The latest note and earlier notes on the left, Topics on the right from
+   the top, under a rule that runs across both. Topics goes under the notes
+   when there isn't room. */
 .home-columns {
 	display: grid;
 	grid-template-columns: 2fr 1fr;
 	gap: 48px;
-	margin-top: 72px;
+	margin-top: 48px;
+	padding-top: 20px;
+	border-top: 1px solid var(--line);
 }
 
 .home-columns section {
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
+}
+
+.home-earlier {
+	margin-top: 72px;
 }
 
 @media (max-width: 760px) {
@@ -753,10 +757,6 @@ a.label:hover {
 	font-size: 0.85em;
 }
 
-/* About page
-   ====================================================================== */
-
-/* The About text is read like a note, so it uses the reading serif. The
 /* The labels that open the reading list and the notes at the end of a note,
    each followed by a thin rule. */
 .prose .end-label {
@@ -866,6 +866,10 @@ a.label:hover {
 	text-decoration: none;
 }
 
+/* About page
+   ====================================================================== */
+
+/* The About text is read like a note, so it uses the reading serif. The
    page heading keeps the dot-matrix font. */
 .about {
 	display: flex;

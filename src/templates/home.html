@@ -6,9 +6,13 @@
 	<svg class="home-robot" width="90" height="115" viewBox="0 0 18 23" aria-hidden="true">{{robotFrames}}</svg>
 </section>
 
-<!-- The newest note. -->
-<article class="exhibit" aria-labelledby="exhibit-title">
-	{{latestNote}}
-</article>
-
-{{moreNotes}}
+<!-- The newest note and earlier notes on the left, Topics on the right. -->
+<div class="home-columns">
+	<div class="home-main">
+		<article class="exhibit" aria-labelledby="exhibit-title">
+			{{latestNote}}
+		</article>
+		{{earlierNotes}}
+	</div>
+	{{topics}}
+</div>

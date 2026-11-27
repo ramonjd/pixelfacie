@@ -143,7 +143,8 @@ async function build() {
 						`<g class="robot-frame" style="--frame: ${i}">${drawLed(rows, ROBOT_LEVELS, 'robot', `robot-${i}`)}</g>`
 				).join('')}</g>`,
 			latestNote: renderLatestNote(posts[0]),
-			moreNotes: renderMoreNotes(posts, tags),
+			earlierNotes: renderEarlierNotes(posts),
+			topics: renderHomeTopics(tags),
 		}),
 	});
 
@@ -353,7 +354,6 @@ async function loadPost(file) {
 	};
 }
 
-// Reads the `key: value` lines between the opening and closing `---`.
 // Draws the list under a "## Reading list" heading as numbered rows. Each item
 // is `[Title](url) · Source · Why`, and the source and the reason are optional.
 function renderReadingList(html) {
@@ -370,6 +370,7 @@ function renderReadingList(html) {
 	});
 }
 
+// Reads the `key: value` lines between the opening and closing `---`.
 function parseFrontMatter(source) {
 	const text = source.replace(/\r\n/g, '\n');
 	const match = text.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
@@ -442,39 +443,37 @@ function renderLatestNote(post) {
 
 // The home page's Earlier notes and Topics, under Exhibit A. Earlier notes
 // needs a second note, and Topics needs a tag.
-function renderMoreNotes(posts, tags) {
+function renderEarlierNotes(posts) {
 	const earlier = posts.slice(1, 1 + POSTS_ON_HOME_PAGE);
-	const columns = [];
-
-	if (earlier.length) {
-		columns.push(`
-		<section aria-labelledby="earlier-title">
+	if (!earlier.length) {
+		return '';
+	}
+	return `
+		<section class="home-earlier" aria-labelledby="earlier-title">
 			<div class="section-heading">
 				<h2 id="earlier-title" class="label">Earlier notes</h2>
 				<a class="label" href="/notes/">All notes →</a>
 			</div>
 			${renderPostList(earlier)}
-		</section>`);
-	}
+		</section>`;
+}
 
-	if (tags.size) {
-		// The topics with the most notes, ties in alphabetical order.
-		const topTopics = [...tags]
-			.sort(([, a], [, b]) => b.posts.length - a.posts.length || a.name.localeCompare(b.name))
-			.slice(0, TOPICS_ON_HOME_PAGE);
-		columns.push(`
-		<section aria-labelledby="topics-title">
+function renderHomeTopics(tags) {
+	if (!tags.size) {
+		return '';
+	}
+	// The topics with the most notes, ties in alphabetical order.
+	const topTopics = [...tags]
+		.sort(([, a], [, b]) => b.posts.length - a.posts.length || a.name.localeCompare(b.name))
+		.slice(0, TOPICS_ON_HOME_PAGE);
+	return `
+		<section class="home-topics" aria-labelledby="topics-title">
 			<div class="section-heading">
 				<h2 id="topics-title" class="label">Topics</h2>
 				<a class="label" href="/topics/">All topics →</a>
 			</div>
 			${renderTopics(topTopics)}
-		</section>`);
-	}
-
-	return columns.length
-		? `<div class="home-columns">${columns.join('')}\n</div>`
-		: '';
+		</section>`;
 }
 
 // Tags as pills with their number of notes, in the order given, each linking
