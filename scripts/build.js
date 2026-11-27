@@ -27,6 +27,7 @@ import { existsSync } from 'node:fs';
 import { cp, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { marked } from 'marked';
+import markedFootnote from 'marked-footnote';
 import { AVATAR_LEVELS, drawLed, drawSprite, FRAMES, ledBase } from '../src/assets/sprites.js';
 import { ROBOT_FRAMES, ROBOT_LEVELS } from '../src/assets/robot.js';
 import { SCENE, SCENE_LEVELS } from '../src/assets/footer-scene.js';
@@ -61,6 +62,10 @@ const FAVICON_COLOURS = Object.fromEntries(
 		return [key, `#${hex}`];
 	})
 );
+
+// Footnotes: `[^name]` in the text and `[^name]: text` at the end. They're
+// numbered 1, 2, 3 in order and listed under a "Footnotes" label.
+marked.use(markedFootnote({ description: 'Footnotes', headingClass: 'label end-label', backRefLabel: 'Back to the text' }));
 
 await build();
 
@@ -344,11 +349,27 @@ async function loadPost(file) {
 			.split(',')
 			.map((tag) => tag.trim())
 			.filter(Boolean),
-		html: marked.parse(body),
+		html: renderReadingList(marked.parse(body)),
 	};
 }
 
 // Reads the `key: value` lines between the opening and closing `---`.
+// Draws the list under a "## Reading list" heading as numbered rows. Each item
+// is `[Title](url) · Source · Why`, and the source and the reason are optional.
+function renderReadingList(html) {
+	return html.replace(/<h2>Reading list<\/h2>\s*<ul>([\s\S]*?)<\/ul>/, (match, items) => {
+		const rows = [...items.matchAll(/<li>([\s\S]*?)<\/li>/g)].map(([, item], index) => {
+			const [link, source, why] = item.split(' · ');
+			const number = String(index + 1).padStart(2, '0');
+			return `<li><span class="number">${number}</span>${link}`
+				+ (source ? `<span class="label">${source}</span>` : '')
+				+ (why ? `<span class="why">${why}</span>` : '')
+				+ '</li>';
+		});
+		return `<h2 class="label end-label">Reading list</h2>\n<ol class="reading-list">${rows.join('\n')}</ol>`;
+	});
+}
+
 function parseFrontMatter(source) {
 	const text = source.replace(/\r\n/g, '\n');
 	const match = text.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);

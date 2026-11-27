@@ -757,6 +757,115 @@ a.label:hover {
    ====================================================================== */
 
 /* The About text is read like a note, so it uses the reading serif. The
+/* The labels that open the reading list and the notes at the end of a note,
+   each followed by a thin rule. */
+.prose .end-label {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-top: 48px;
+	font-size: 12px;
+}
+
+.prose .end-label::after {
+	content: "";
+	flex: 1;
+	height: 1px;
+	background: var(--line);
+}
+
+/* Reading list: numbered rows with the title, where it's from, and an
+   optional line on why it's worth reading. */
+.reading-list {
+	padding-left: 0;
+	list-style: none;
+}
+
+.reading-list li {
+	display: grid;
+	grid-template-columns: 40px 1fr;
+	padding: 14px 0;
+	border-bottom: 1px solid var(--line);
+}
+
+.reading-list .number {
+	grid-row: span 3;
+	padding-top: 5px;
+	color: var(--accent);
+	font-family: var(--mono-font);
+	font-size: 12px;
+}
+
+.reading-list a {
+	color: var(--text);
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.reading-list a:hover {
+	color: var(--accent);
+}
+
+.reading-list .label {
+	font-size: 11px;
+}
+
+.reading-list .why {
+	margin-top: 2px;
+	color: var(--muted);
+	font-size: 15px;
+}
+
+/* Footnotes: small amber numbers in the text, and the notes themselves in
+   smaller grey type at the end. */
+.prose [data-footnote-ref] {
+	padding: 0 1px;
+	color: var(--accent);
+	font-family: var(--mono-font);
+	font-size: 11px;
+	text-decoration: none;
+}
+
+.prose [data-footnote-ref]:hover {
+	text-decoration: underline;
+}
+
+.footnotes ol {
+	padding-left: 0;
+	list-style: none;
+	counter-reset: footnote;
+	color: var(--muted);
+	font-size: 15px;
+	line-height: 1.6;
+}
+
+.footnotes li {
+	display: grid;
+	grid-template-columns: 28px 1fr;
+	counter-increment: footnote;
+}
+
+.footnotes li + li {
+	margin-top: 10px;
+}
+
+.footnotes li::before {
+	content: counter(footnote);
+	padding-top: 3px;
+	color: var(--accent);
+	font-family: var(--mono-font);
+	font-size: 12px;
+}
+
+.footnotes p {
+	margin: 0;
+}
+
+.footnotes [data-footnote-backref] {
+	color: var(--accent);
+	text-decoration: none;
+}
+
    page heading keeps the dot-matrix font. */
 .about {
 	display: flex;
